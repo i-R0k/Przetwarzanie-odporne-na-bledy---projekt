@@ -9,9 +9,16 @@ load_dotenv()
 import uvicorn
 
 from vetclinic_api.routers import (
-    users, doctors, appointments, animals,
-    weight_logs, medical_records, invoices,
-    consultants, facilities, blockchain, payments
+    users,
+    doctors,
+    appointments,
+    animals,
+    weight_logs,
+    medical_records,
+    invoices,
+    consultants,
+    facilities,
+    payments,
 )
 from vetclinic_api.core.database import engine, Base
 
@@ -31,8 +38,6 @@ app.include_router(animals.router)
 app.include_router(medical_records.router)
 app.include_router(invoices.router)
 app.include_router(weight_logs.router)
-app.include_router(blockchain.router)
-app.include_router(invoices.router)
 app.include_router(payments.router)
  
 

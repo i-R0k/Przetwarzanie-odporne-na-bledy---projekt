@@ -18,7 +18,5 @@ class MedicalRecord(MedicalRecordBase):
     created_at: datetime
     appointment_id: int
     animal_id: int
-    data_hash: str
-    blockchain_tx: str
 
     model_config = ConfigDict(from_attributes=True)
