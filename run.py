@@ -5,7 +5,7 @@ from watchdog.events import PatternMatchingEventHandler
 
 ROOT    = Path(__file__).parent.resolve()
 API_DIR = ROOT / "VetClinic" / "API" / "vetclinic_api"
-GUI_DIR = ROOT / "VetClinic" / "GUI" / "vetclinic_gui"
+GUI_DIR = ROOT / "VetClinic" / "GUI" / "vetclinic_gui" 
 
 procs = []
 
@@ -19,7 +19,7 @@ def start_processes():
             cwd=str(API_DIR)
         ),
         subprocess.Popen(
-            [sys.executable, "-m", "vetclinic_gui"],
+            [sys.executable, "-m", "vetclinic_gui.main"],
             cwd=str(GUI_DIR)
         )
     ]
