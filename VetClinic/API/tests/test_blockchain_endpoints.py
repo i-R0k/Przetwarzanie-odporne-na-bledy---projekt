@@ -1,11 +1,28 @@
 from fastapi.testclient import TestClient
 
+from vetclinic_api.core.database import SessionLocal
 from vetclinic_api.main import app
+from vetclinic_api.models_blockchain import BlockDB, TransactionDB
+import vetclinic_api.blockchain.deps as deps
+from vetclinic_api.blockchain.core import SQLAlchemyStorage
 
-client = TestClient(app)
+
+def _reset_chain_state():
+    db = SessionLocal()
+    db.query(TransactionDB).delete()
+    db.query(BlockDB).delete()
+    db.commit()
+    db.close()
+    deps._storage = SQLAlchemyStorage()
+
+
+def _client():
+    return TestClient(app)
 
 
 def test_submit_and_mine_flow():
+    _reset_chain_state()
+    client = _client()
     tx = {"sender": "alice", "recipient": "bob", "amount": 10.5}
     r1 = client.post("/tx/submit", json=tx)
     assert r1.status_code == 202
