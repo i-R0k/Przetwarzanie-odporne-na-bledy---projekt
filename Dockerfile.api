@@ -1,0 +1,21 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Zależności
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Kod aplikacji
+COPY VetClinic ./VetClinic
+
+# Ustawiamy PYTHONPATH tak, by widzieć vetclinic_api
+ENV PYTHONPATH=/app/VetClinic/API
+
+# Domyślny port wewnątrz kontenera
+ENV API_PORT=8000
+
+CMD ["uvicorn", "vetclinic_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
