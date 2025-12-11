@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from vetclinic_api.core.database import Base
@@ -15,6 +15,8 @@ class BlockDB(Base):
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     nonce = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
+    merkle_root = Column(String(128), nullable=False, default="")
+    leader_sig = Column(Text, nullable=False, default="")
 
     transactions = relationship(
         "TransactionDB", back_populates="block", cascade="all, delete-orphan"
@@ -27,9 +29,10 @@ class TransactionDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     block_id = Column(Integer, ForeignKey("blocks.id"), nullable=True, index=True)
 
-    sender = Column(String(128), nullable=False)
-    recipient = Column(String(128), nullable=False)
-    amount = Column(Float, nullable=False)
+    tx_id = Column(String(128), nullable=False, unique=True)
+    payload = Column(Text, nullable=False)
+    sender_pub = Column(String(256), nullable=False)
+    signature = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     committed = Column(Boolean, default=False, nullable=False)
 

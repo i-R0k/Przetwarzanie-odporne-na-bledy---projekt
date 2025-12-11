@@ -9,7 +9,10 @@ services:
     environment:
       NODE_ID: "1"
       LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
       PEERS: "http://node2:8000,http://node3:8000,http://node4:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
     ports:
       - "8001:8000"
 
@@ -21,7 +24,10 @@ services:
     environment:
       NODE_ID: "2"
       LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
       PEERS: "http://node1:8000,http://node3:8000,http://node4:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
     ports:
       - "8002:8000"
 
@@ -33,7 +39,10 @@ services:
     environment:
       NODE_ID: "3"
       LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
       PEERS: "http://node1:8000,http://node2:8000,http://node4:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
     ports:
       - "8003:8000"
 
@@ -45,7 +54,10 @@ services:
     environment:
       NODE_ID: "4"
       LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
       PEERS: "http://node1:8000,http://node2:8000,http://node3:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
     ports:
       - "8004:8000"
 
@@ -57,7 +69,10 @@ services:
     environment:
       NODE_ID: "5"
       LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
       PEERS: "http://node1:8000,http://node2:8000,http://node3:8000,http://node4:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
     ports:
       - "8005:8000"
 
@@ -69,6 +84,9 @@ services:
     environment:
       NODE_ID: "6"
       LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
       PEERS: "http://node1:8000,http://node2:8000,http://node3:8000,http://node4:8000,http://node5:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
     ports:
       - "8006:8000"

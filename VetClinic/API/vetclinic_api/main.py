@@ -21,6 +21,8 @@ from vetclinic_api.routers import (
     blockchain,
     payments,
     rpc,
+    cluster,
+    admin,
 )
 from vetclinic_api.core.database import engine, Base
 
@@ -43,6 +45,8 @@ app.include_router(weight_logs.router)
 app.include_router(blockchain.router)
 app.include_router(payments.router)
 app.include_router(rpc.router)
+app.include_router(cluster.router)
+app.include_router(admin.router)
  
 
 # Tworzenie tabel w bazie danych (jeśli nie istnieją)

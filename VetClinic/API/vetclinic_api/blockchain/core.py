@@ -4,22 +4,42 @@ import hashlib
 import json
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List
+from decimal import Decimal
+from typing import Any, Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
 from vetclinic_api.core.database import SessionLocal
 from vetclinic_api.models_blockchain import BlockDB, TransactionDB
+from vetclinic_api.crypto.ed25519 import (
+    load_leader_keys_from_env,
+    sign_message,
+    verify_signature,
+)
 
 DIFFICULTY_PREFIX = "0000"
 
 
-class Transaction(BaseModel):
+class TxPayload(BaseModel):
     sender: str
     recipient: str
-    amount: float
+    amount: Decimal
+
+
+class Transaction(BaseModel):
+    id: str
+    payload: TxPayload
+    sender_pub: str
+    signature: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    @field_validator("timestamp", mode="before")
+    @classmethod
+    def ensure_datetime(cls, value):
+        if isinstance(value, str):
+            return datetime.fromisoformat(value)
+        return value
 
 
 class Block(BaseModel):
@@ -28,6 +48,8 @@ class Block(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     transactions: List[Transaction]
     nonce: int = 0
+    merkle_root: str = ""
+    leader_sig: str = ""
 
 
 class BlockchainState(BaseModel):
@@ -35,15 +57,49 @@ class BlockchainState(BaseModel):
     mempool: List[Transaction] = Field(default_factory=list)
 
 
+class BlockProposal(BaseModel):
+    block: Block
+    hash: str
+
+
+def compute_merkle_root(txs: List[Transaction]) -> str:
+    if not txs:
+        return hashlib.sha256(b"").hexdigest()
+
+    h = hashlib.sha256()
+    for tx in txs:
+        h.update(tx.id.encode("utf-8"))
+    return h.hexdigest()
+
+
+def block_header_bytes(block: Block) -> bytes:
+    header = {
+        "index": block.index,
+        "previous_hash": block.previous_hash,
+        "timestamp": block.timestamp.isoformat(),
+        "merkle_root": block.merkle_root,
+        "nonce": block.nonce,
+    }
+    return json.dumps(header, sort_keys=True).encode("utf-8")
+
+
 def compute_block_hash(block: Block) -> str:
-    payload = json.dumps(block.dict(), sort_keys=True, default=str)
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    data = (
+        str(block.index)
+        + block.previous_hash
+        + block.timestamp.isoformat()
+        + block.merkle_root
+        + str(block.nonce)
+    ).encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
 
 
 def is_valid_new_block(previous: Block, new: Block) -> bool:
     if new.index != previous.index + 1:
         return False
     if new.previous_hash != compute_block_hash(previous):
+        return False
+    if compute_merkle_root(new.transactions) != new.merkle_root:
         return False
     block_hash = compute_block_hash(new)
     return block_hash.startswith(DIFFICULTY_PREFIX)
@@ -82,6 +138,8 @@ class InMemoryStorage(Storage):
                 previous_hash="0" * 64,
                 transactions=[],
                 nonce=0,
+                merkle_root=compute_merkle_root([]),
+                leader_sig="",
             )
             self._chain.append(genesis)
 
@@ -119,9 +177,10 @@ class SQLAlchemyStorage(Storage):
             for b in blocks_db:
                 txs = [
                     Transaction(
-                        sender=t.sender,
-                        recipient=t.recipient,
-                        amount=t.amount,
+                        id=t.tx_id,
+                        payload=TxPayload.model_validate_json(t.payload),
+                        sender_pub=t.sender_pub,
+                        signature=t.signature,
                         timestamp=t.timestamp,
                     )
                     for t in sorted(b.transactions, key=lambda t: t.id)
@@ -133,6 +192,8 @@ class SQLAlchemyStorage(Storage):
                         timestamp=b.timestamp,
                         transactions=txs,
                         nonce=b.nonce,
+                        merkle_root=b.merkle_root,
+                        leader_sig=b.leader_sig,
                     )
                 )
 
@@ -142,6 +203,8 @@ class SQLAlchemyStorage(Storage):
                     previous_hash="0" * 64,
                     transactions=[],
                     nonce=0,
+                    merkle_root=compute_merkle_root([]),
+                    leader_sig="",
                 )
                 self._persist_block(genesis, db=db)
                 result = [genesis]
@@ -160,19 +223,35 @@ class SQLAlchemyStorage(Storage):
                 timestamp=block.timestamp,
                 nonce=block.nonce,
                 hash=block_hash,
+                merkle_root=block.merkle_root,
+                leader_sig=block.leader_sig,
             )
             db.add(block_db)
             db.flush()
             for tx in block.transactions:
-                tx_db = TransactionDB(
-                    block_id=block_db.id,
-                    sender=tx.sender,
-                    recipient=tx.recipient,
-                    amount=tx.amount,
-                    timestamp=tx.timestamp,
-                    committed=True,
+                existing = (
+                    db.query(TransactionDB)
+                    .filter(TransactionDB.tx_id == tx.id)
+                    .one_or_none()
                 )
-                db.add(tx_db)
+                if existing:
+                    existing.block_id = block_db.id
+                    existing.payload = tx.payload.model_dump_json()
+                    existing.sender_pub = tx.sender_pub
+                    existing.signature = tx.signature
+                    existing.timestamp = tx.timestamp
+                    existing.committed = True
+                else:
+                    tx_db = TransactionDB(
+                        block_id=block_db.id,
+                        tx_id=tx.id,
+                        payload=tx.payload.model_dump_json(),
+                        sender_pub=tx.sender_pub,
+                        signature=tx.signature,
+                        timestamp=tx.timestamp,
+                        committed=True,
+                    )
+                    db.add(tx_db)
             db.commit()
         except Exception:
             db.rollback()
@@ -201,9 +280,10 @@ class SQLAlchemyStorage(Storage):
             )
             return [
                 Transaction(
-                    sender=t.sender,
-                    recipient=t.recipient,
-                    amount=t.amount,
+                    id=t.tx_id,
+                    payload=TxPayload.model_validate_json(t.payload),
+                    sender_pub=t.sender_pub,
+                    signature=t.signature,
                     timestamp=t.timestamp,
                 )
                 for t in pending
@@ -213,9 +293,10 @@ class SQLAlchemyStorage(Storage):
         with self._session() as db:
             try:
                 tx_db = TransactionDB(
-                    sender=tx.sender,
-                    recipient=tx.recipient,
-                    amount=tx.amount,
+                    tx_id=tx.id,
+                    payload=tx.payload.model_dump_json(),
+                    sender_pub=tx.sender_pub,
+                    signature=tx.signature,
                     timestamp=tx.timestamp,
                     committed=False,
                 )
@@ -232,6 +313,12 @@ class SQLAlchemyStorage(Storage):
 
 
 def mine_block(storage: Storage) -> Block:
+    proposal = build_block_proposal(storage)
+    storage.add_block(proposal.block)
+    return proposal.block
+
+
+def build_block_proposal(storage: Storage) -> BlockProposal:
     chain = storage.get_chain()
     mempool = storage.get_mempool()
 
@@ -242,18 +329,89 @@ def mine_block(storage: Storage) -> Block:
     previous_hash = compute_block_hash(previous)
     index = previous.index + 1
     nonce = 0
+    timestamp = datetime.utcnow()
+    merkle_root = compute_merkle_root(mempool)
 
     while True:
         candidate = Block(
             index=index,
             previous_hash=previous_hash,
             transactions=mempool,
+            timestamp=timestamp,
             nonce=nonce,
+            merkle_root=merkle_root,
+            leader_sig="",
         )
         block_hash = compute_block_hash(candidate)
         if block_hash.startswith(DIFFICULTY_PREFIX):
             break
         nonce += 1
 
-    storage.add_block(candidate)
-    return candidate
+    header_bytes = block_header_bytes(candidate)
+    keys = load_leader_keys_from_env()
+    candidate.leader_sig = sign_message(keys.priv, header_bytes)
+
+    return BlockProposal(block=candidate, hash=block_hash)
+
+
+def verify_chain(storage: Storage) -> Dict[str, Any]:
+    chain = storage.get_chain()
+    if not chain:
+        return {"valid": True, "height": 0, "errors": []}
+
+    errors: List[dict] = []
+    keys = load_leader_keys_from_env()
+
+    for idx, block in enumerate(chain):
+        if idx == 0:
+            continue
+
+        prev = chain[idx - 1]
+
+        if block.index != prev.index + 1:
+            errors.append({"block": block.index, "reason": "index not consecutive"})
+
+        prev_hash = compute_block_hash(prev)
+        if block.previous_hash != prev_hash:
+            errors.append({"block": block.index, "reason": "previous_hash mismatch"})
+
+        merkle = compute_merkle_root(block.transactions)
+        if block.merkle_root != merkle:
+            errors.append({"block": block.index, "reason": "invalid merkle_root"})
+
+        header_bytes = block_header_bytes(block)
+        if not verify_signature(keys.pub, header_bytes, block.leader_sig):
+            errors.append({"block": block.index, "reason": "invalid leader_sig"})
+
+        for tx in block.transactions:
+            if not _verify_transaction(tx, keys=keys):
+                errors.append(
+                    {
+                        "block": block.index,
+                        "tx": tx.id,
+                        "reason": "invalid transaction",
+                    }
+                )
+
+    return {
+        "valid": len(errors) == 0,
+        "height": chain[-1].index,
+        "errors": errors,
+    }
+
+
+def _verify_transaction(tx: Transaction, *, keys=None) -> bool:
+    payload_dict = tx.payload.model_dump(mode="json")
+    raw = json.dumps(
+        {"payload": payload_dict, "timestamp": tx.timestamp.isoformat()},
+        sort_keys=True,
+    ).encode("utf-8")
+
+    expected_id = hashlib.sha256(raw).hexdigest()
+    if tx.id != expected_id:
+        return False
+
+    leader_keys = keys or load_leader_keys_from_env()
+    if not verify_signature(leader_keys.pub, raw, tx.signature):
+        return False
+    return True

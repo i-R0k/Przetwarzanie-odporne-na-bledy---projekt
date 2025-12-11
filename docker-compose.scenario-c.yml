@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  node4:
+    environment:
+      FAULT_BYZANTINE: "true"
+  node5:
+    environment:
+      FAULT_BYZANTINE: "true"
+  node6:
+    environment:
+      FAULT_BYZANTINE: "true"
