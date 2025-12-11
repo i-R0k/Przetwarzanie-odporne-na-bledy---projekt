@@ -1,4 +1,7 @@
 import sys
+import hashlib
+import json
+from datetime import datetime
 
 from PyQt5.QtWidgets import (
     QApplication,
@@ -24,6 +27,7 @@ from PyQt5.QtGui import QBrush, QColor, QCursor, QFont, QTextCharFormat
 from vetclinic_gui.services.animals_service import AnimalService
 from vetclinic_gui.services.appointments_service import AppointmentService
 from vetclinic_gui.services.medical_records_service import MedicalRecordService
+from vetclinic_gui.services import blockchain_service
 
 
 class DashboardWindow(QMainWindow):
@@ -36,6 +40,7 @@ class DashboardWindow(QMainWindow):
 
         self.highlighted_dates = []
         self.current_appointments = []
+        self.row_records = {}
 
         self.setWindowTitle("VetClinic - Dashboard klienta")
         self.setMinimumSize(1080, 720)
@@ -128,7 +133,8 @@ class DashboardWindow(QMainWindow):
             ["Opis", "Data wizyty", "Status", "Notatki"]
         )
         self.med_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.med_table.setSelectionMode(QTableWidget.NoSelection)
+        self.med_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.med_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.med_table.setFrameShape(QFrame.NoFrame)
         self.med_table.setShowGrid(False)
         self.med_table.verticalHeader().setVisible(False)
@@ -159,6 +165,20 @@ class DashboardWindow(QMainWindow):
         """
         )
         layout.addWidget(self.med_table)
+
+        status_row = QHBoxLayout()
+        self.lbl_onchain = QLabel("On-chain: ?")
+        self.btn_chain_refresh = QPushButton("Odśwież status on-chain")
+        self.btn_chain_anchor = QPushButton("Zapisz hash w blockchainie")
+        status_row.addWidget(self.lbl_onchain)
+        status_row.addStretch()
+        status_row.addWidget(self.btn_chain_refresh)
+        status_row.addWidget(self.btn_chain_anchor)
+        layout.addLayout(status_row)
+
+        self.med_table.itemSelectionChanged.connect(self._on_record_selection)
+        self.btn_chain_refresh.clicked.connect(self._refresh_onchain_status)
+        self.btn_chain_anchor.clicked.connect(self._anchor_record_on_chain)
 
         return group
 
@@ -198,6 +218,7 @@ class DashboardWindow(QMainWindow):
         self.current_appointments = appts
 
         self.med_table.setRowCount(0)
+        self.row_records = {}
 
         for row, appt in enumerate(appts):
             recs = MedicalRecordService.list_by_appointment(appt.id) or []
@@ -226,6 +247,19 @@ class DashboardWindow(QMainWindow):
             item_notes = QTableWidgetItem(appt.notes or "")
             item_notes.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             self.med_table.setItem(row, 3, item_notes)
+
+            latest_record = None
+            if recs:
+                latest_record = sorted(
+                    recs, key=lambda r: getattr(r, "created_at", datetime.min)
+                )[-1]
+            self.row_records[row] = latest_record
+
+        if self.med_table.rowCount() > 0:
+            self.med_table.selectRow(0)
+            self._refresh_onchain_status()
+        else:
+            self.lbl_onchain.setText("On-chain: brak rekordów")
 
         for d in self.highlighted_dates:
             self.clinic_calendar.setDateTextFormat(d, QTextCharFormat())
@@ -257,6 +291,81 @@ class DashboardWindow(QMainWindow):
         desc = appt.reason or ""
         doc = f"Dr {appt.doctor.first_name} {appt.doctor.last_name}"
         self.visit_desc_lbl.setText(f"{desc} - {doc}")
+
+    def _on_record_selection(self):
+        self._refresh_onchain_status()
+
+    def _get_selected_record(self):
+        selection = self.med_table.selectionModel()
+        if not selection:
+            return None
+        rows = selection.selectedRows()
+        if not rows:
+            return None
+        row = rows[0].row()
+        return self.row_records.get(row)
+
+    def _record_as_dict(self, record):
+        return {
+            "id": record.id,
+            "description": record.description or "",
+            "appointment_id": record.appointment_id,
+            "animal_id": record.animal_id,
+            "created_at": record.created_at.isoformat()
+            if getattr(record, "created_at", None)
+            else "",
+        }
+
+    def _compute_record_hash(self, record):
+        data = json.dumps(self._record_as_dict(record), sort_keys=True).encode("utf-8")
+        return hashlib.sha256(data).hexdigest()
+
+    def _refresh_onchain_status(self):
+        record = self._get_selected_record()
+        if record is None:
+            self.lbl_onchain.setText("On-chain: brak rekordu")
+            return
+        try:
+            chain_rec = blockchain_service.get_record_on_chain(record.id)
+        except Exception as exc:
+            self.lbl_onchain.setText(f"On-chain: BŁĄD ({exc})")
+            return
+
+        local_hash = self._compute_record_hash(record)
+        if chain_rec is None:
+            self.lbl_onchain.setText("On-chain: NIE")
+            return
+
+        on_hash = chain_rec.get("data_hash")
+        if on_hash == local_hash:
+            block_idx = chain_rec.get("block_index")
+            self.lbl_onchain.setText(f"On-chain: TAK (blok #{block_idx})")
+        else:
+            self.lbl_onchain.setText(
+                f"On-chain: ROZBIEŻNY (on-chain {on_hash[:8]}..., lokalny {local_hash[:8]}...)"
+            )
+
+    def _anchor_record_on_chain(self):
+        record = self._get_selected_record()
+        if record is None:
+            QMessageBox.warning(self, "Blockchain", "Brak rekordu do zapisania.")
+            return
+        local_hash = self._compute_record_hash(record)
+        try:
+            blockchain_service.add_record_on_chain(
+                record_id=record.id,
+                data_hash=local_hash,
+                owner=str(self.client_id),
+            )
+        except Exception as exc:
+            QMessageBox.critical(
+                self, "Blockchain", f"Błąd wysyłania transakcji: {exc}"
+            )
+            return
+        QMessageBox.information(
+            self, "Blockchain", "Hash rekordu został wysłany jako transakcja."
+        )
+        self._refresh_onchain_status()
 
 
 if __name__ == "__main__":

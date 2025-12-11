@@ -4,7 +4,7 @@ import json
 from typing import Any, Dict
 
 import requests
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 NODES: Dict[int, str] = {
     1: "http://localhost:8001",
@@ -18,12 +18,12 @@ LEADER_ID = 1
 
 
 class ClusterAdminWidget(QtWidgets.QWidget):
-    """
-    Panel administracyjny do podglądu klastra blockchain i sterowania FAULT_*.
-    """
+    """Panel administracyjny do podglądu klastra blockchain i sterowania FAULT_*."""
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
+        self._timer = QtCore.QTimer(self)
+        self._timer.setInterval(3000)
         self._build_ui()
         self._connect_signals()
         self.refresh_cluster()
@@ -55,6 +55,18 @@ class ClusterAdminWidget(QtWidgets.QWidget):
         btn_row.addWidget(self.btn_mine)
         btn_row.addWidget(self.btn_send_tx)
         layout.addLayout(btn_row)
+
+        auto_row = QtWidgets.QHBoxLayout()
+        self.chk_auto_refresh = QtWidgets.QCheckBox("Auto-odświeżanie")
+        self.spin_auto_interval = QtWidgets.QSpinBox()
+        self.spin_auto_interval.setRange(1, 60)
+        self.spin_auto_interval.setValue(3)
+        self.spin_auto_interval.setSuffix(" s")
+        auto_row.addWidget(self.chk_auto_refresh)
+        auto_row.addWidget(QtWidgets.QLabel("Interwał:"))
+        auto_row.addWidget(self.spin_auto_interval)
+        auto_row.addStretch(1)
+        layout.addLayout(auto_row)
 
         faults_group = QtWidgets.QGroupBox("Symulacja błędów dla wybranego węzła (FAULT_*)")
         fg_layout = QtWidgets.QGridLayout(faults_group)
@@ -108,6 +120,14 @@ class ClusterAdminWidget(QtWidgets.QWidget):
         fg_layout.addWidget(self.btn_apply_faults, row, 2, 1, 2)
 
         layout.addWidget(faults_group)
+
+        details_group = QtWidgets.QGroupBox("Szczegóły węzła (status + verify)")
+        dg_layout = QtWidgets.QVBoxLayout(details_group)
+        self.text_details = QtWidgets.QTextEdit()
+        self.text_details.setReadOnly(True)
+        dg_layout.addWidget(self.text_details)
+        layout.addWidget(details_group)
+
         self.setLayout(layout)
 
     def _connect_signals(self) -> None:
@@ -116,6 +136,10 @@ class ClusterAdminWidget(QtWidgets.QWidget):
         self.btn_send_tx.clicked.connect(self.send_test_tx)
         self.btn_load_faults.clicked.connect(self.load_faults_for_selected)
         self.btn_apply_faults.clicked.connect(self.apply_faults_for_selected)
+        self.chk_auto_refresh.toggled.connect(self._toggle_auto_refresh)
+        self.spin_auto_interval.valueChanged.connect(self._change_auto_interval)
+        self._timer.timeout.connect(self.refresh_cluster)
+        self.table.itemSelectionChanged.connect(self._load_selected_node_details)
 
     def _show_error(self, msg: str) -> None:
         QtWidgets.QMessageBox.critical(self, "Błąd", msg)
@@ -171,6 +195,26 @@ class ClusterAdminWidget(QtWidgets.QWidget):
             self.table.setItem(row, 3, QtWidgets.QTableWidgetItem(last_hash))
             self.table.setItem(row, 4, QtWidgets.QTableWidgetItem(valid_str))
             self.table.setItem(row, 5, QtWidgets.QTableWidgetItem(faults_desc or "-"))
+
+            for col in range(6):
+                item = self.table.item(row, col)
+                if item:
+                    item.setBackground(QtCore.Qt.NoBrush)
+
+            color = None
+            desc = faults_desc or ""
+            if "STATUS ERR" in desc or "VERIFY ERR" in desc or "HTTP" in desc:
+                color = QtGui.QColor("#FFD966")
+            elif valid_str == "INVALID":
+                color = QtGui.QColor("#F4CCCC")
+            elif valid_str == "OK":
+                color = QtGui.QColor("#D9EAD3")
+
+            if color:
+                for col in range(6):
+                    item = self.table.item(row, col)
+                    if item:
+                        item.setBackground(color)
 
     def mine_distributed(self) -> None:
         base_url = self._get_node_base_url(LEADER_ID)
@@ -263,3 +307,43 @@ class ClusterAdminWidget(QtWidgets.QWidget):
             self._show_error(f"/admin/faults PUT error: {exc}")
 
         self.refresh_cluster()
+
+    def _toggle_auto_refresh(self, enabled: bool) -> None:
+        if enabled:
+            self._timer.start()
+        else:
+            self._timer.stop()
+
+    def _change_auto_interval(self, seconds: int) -> None:
+        self._timer.setInterval(seconds * 1000)
+
+    def _load_selected_node_details(self) -> None:
+        items = self.table.selectedItems()
+        if not items:
+            return
+        row = items[0].row()
+        node_item = self.table.item(row, 0)
+        if node_item is None:
+            return
+        try:
+            node_id = int(node_item.text())
+        except ValueError:
+            return
+
+        base_url = self._get_node_base_url(node_id)
+        try:
+            s_resp = requests.get(f"{base_url}/chain/status", timeout=3.0)
+            v_resp = requests.get(f"{base_url}/chain/verify", timeout=3.0)
+            data = {
+                "status": s_resp.json()
+                if s_resp.status_code == 200
+                else {"http_status": s_resp.status_code, "body": s_resp.text},
+                "verify": v_resp.json()
+                if v_resp.status_code == 200
+                else {"http_status": v_resp.status_code, "body": v_resp.text},
+            }
+            self.text_details.setPlainText(
+                json.dumps(data, indent=2, ensure_ascii=False)
+            )
+        except Exception as exc:
+            self.text_details.setPlainText(f"Error loading node details: {exc}")

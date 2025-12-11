@@ -5,7 +5,7 @@ import json
 from abc import ABC, abstractmethod
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
@@ -22,9 +22,13 @@ DIFFICULTY_PREFIX = "0000"
 
 
 class TxPayload(BaseModel):
-    sender: str
-    recipient: str
-    amount: Decimal
+    sender: Optional[str] = None
+    recipient: Optional[str] = None
+    amount: Optional[Decimal] = None
+    kind: Optional[str] = None
+    record_id: Optional[int] = None
+    data_hash: Optional[str] = None
+    owner: Optional[str] = None
 
 
 class Transaction(BaseModel):

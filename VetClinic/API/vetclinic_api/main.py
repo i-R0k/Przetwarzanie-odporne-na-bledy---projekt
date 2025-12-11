@@ -19,6 +19,7 @@ from vetclinic_api.routers import (
     consultants,
     facilities,
     blockchain,
+    blockchain_records,
     payments,
     rpc,
     cluster,
@@ -43,6 +44,7 @@ app.include_router(medical_records.router)
 app.include_router(invoices.router)
 app.include_router(weight_logs.router)
 app.include_router(blockchain.router)
+app.include_router(blockchain_records.router)
 app.include_router(payments.router)
 app.include_router(rpc.router)
 app.include_router(cluster.router)
