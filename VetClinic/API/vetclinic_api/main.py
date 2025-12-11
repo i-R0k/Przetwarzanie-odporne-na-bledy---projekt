@@ -9,9 +9,21 @@ load_dotenv()
 import uvicorn
 
 from vetclinic_api.routers import (
-    users, doctors, appointments, animals,
-    weight_logs, medical_records, invoices,
-    consultants, facilities, blockchain, payments
+    users,
+    doctors,
+    appointments,
+    animals,
+    weight_logs,
+    medical_records,
+    invoices,
+    consultants,
+    facilities,
+    blockchain,
+    blockchain_records,
+    payments,
+    rpc,
+    cluster,
+    admin,
 )
 from vetclinic_api.core.database import engine, Base
 
@@ -32,12 +44,15 @@ app.include_router(medical_records.router)
 app.include_router(invoices.router)
 app.include_router(weight_logs.router)
 app.include_router(blockchain.router)
-app.include_router(invoices.router)
+app.include_router(blockchain_records.router)
 app.include_router(payments.router)
+app.include_router(rpc.router)
+app.include_router(cluster.router)
+app.include_router(admin.router)
  
 
 # Tworzenie tabel w bazie danych (jeśli nie istnieją)
 Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("vetclinic_api.main:app", host="127.0.0.1", port=8000, reload=True)

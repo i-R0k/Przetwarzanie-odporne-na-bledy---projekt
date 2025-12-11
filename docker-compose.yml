@@ -1,0 +1,92 @@
+version: "3.9"
+
+services:
+  node1:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: node1
+    environment:
+      NODE_ID: "1"
+      LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
+      PEERS: "http://node2:8000,http://node3:8000,http://node4:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
+    ports:
+      - "8001:8000"
+
+  node2:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: node2
+    environment:
+      NODE_ID: "2"
+      LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
+      PEERS: "http://node1:8000,http://node3:8000,http://node4:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
+    ports:
+      - "8002:8000"
+
+  node3:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: node3
+    environment:
+      NODE_ID: "3"
+      LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
+      PEERS: "http://node1:8000,http://node2:8000,http://node4:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
+    ports:
+      - "8003:8000"
+
+  node4:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: node4
+    environment:
+      NODE_ID: "4"
+      LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
+      PEERS: "http://node1:8000,http://node2:8000,http://node3:8000,http://node5:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
+    ports:
+      - "8004:8000"
+
+  node5:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: node5
+    environment:
+      NODE_ID: "5"
+      LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
+      PEERS: "http://node1:8000,http://node2:8000,http://node3:8000,http://node4:8000,http://node6:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
+    ports:
+      - "8005:8000"
+
+  node6:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: node6
+    environment:
+      NODE_ID: "6"
+      LEADER_ID: "1"
+      LEADER_URL: "http://node1:8000"
+      PEERS: "http://node1:8000,http://node2:8000,http://node3:8000,http://node4:8000,http://node5:8000"
+      LEADER_PRIV_KEY: "CN01R9VLkW/X+64RtavkEcR8owmMv8mbT49nMEZd6+M="
+      LEADER_PUB_KEY: "cyHY3UDNSXJrsU/eWKMut4FmTDt+cJN1zHED5MBKobI="
+    ports:
+      - "8006:8000"

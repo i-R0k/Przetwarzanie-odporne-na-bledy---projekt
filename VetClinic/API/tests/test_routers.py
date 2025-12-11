@@ -4,7 +4,15 @@ from unittest.mock import patch, MagicMock
 import datetime
 
 from vetclinic_api.routers import (
-    payments, users, animals, appointments, blockchain, consultants, doctors, facilities, invoices, medical_records
+    payments,
+    users,
+    animals,
+    appointments,
+    consultants,
+    doctors,
+    facilities,
+    invoices,
+    medical_records,
 )
 from vetclinic_api.main import app
 
@@ -209,39 +217,6 @@ def test_appointment_slots(monkeypatch):
     assert r.status_code == 200
     assert r.json() == []
 
-# ========================== BLOCKCHAIN ==========================
-def test_blockchain_add(monkeypatch):
-    monkeypatch.setattr(blockchain.blockchain_crud, "add_record", lambda rid, h: "0xTX")
-    r = client.post("/blockchain/record", json={"id": 1, "data_hash": "abc"})
-    assert r.status_code == 200
-    assert r.json()["tx_hash"] == "0xTX"
-
-def test_blockchain_get(monkeypatch):
-    monkeypatch.setattr(blockchain.blockchain_crud, "get_record", lambda rid: (1, "abc", 12345, False, "owner"))
-    r = client.get("/blockchain/record/1")
-    assert r.status_code == 200
-
-def test_blockchain_get_deleted(monkeypatch):
-    monkeypatch.setattr(blockchain.blockchain_crud, "get_record", lambda rid: (1, "abc", 12345, True, "owner"))
-    r = client.get("/blockchain/record/1")
-    assert r.status_code == 404
-
-def test_blockchain_owner(monkeypatch):
-    monkeypatch.setattr(blockchain.blockchain_crud, "get_records_by_owner", lambda owner: [1])
-    monkeypatch.setattr(blockchain.blockchain_crud, "get_record", lambda rid: (1, "abc", 123, False, "owner"))
-    r = client.get("/blockchain/records-by-owner/0xABC")
-    assert r.status_code == 200
-
-def test_blockchain_update(monkeypatch):
-    monkeypatch.setattr(blockchain.blockchain_crud, "update_record", lambda rid, h: "0xUPD")
-    r = client.put("/blockchain/record/1", json={"id": 1, "data_hash": "new"})
-    assert r.status_code == 200
-
-def test_blockchain_delete(monkeypatch):
-    monkeypatch.setattr(blockchain.blockchain_crud, "delete_record", lambda rid: "0xDEL")
-    r = client.delete("/blockchain/record/1")
-    assert r.status_code == 200
-
 # ========================== CONSULTANTS ==========================
 def test_consultant_crud(monkeypatch):
     monkeypatch.setattr(consultants, "list_consultants", lambda db, skip=0, limit=100: [
@@ -379,9 +354,7 @@ def test_medical_records_crud(monkeypatch):
             "appointment_id": 101,
             "animal_id": 21,
             "description": "Kontrola",
-            "created_at": "2024-07-01T10:00:00",
-            "data_hash": "abc123",
-            "blockchain_tx": "0xdeadbeef"
+            "created_at": "2024-07-01T10:00:00"
         }
     ])
     r = client.get("/medical_records/")
@@ -392,9 +365,7 @@ def test_medical_records_crud(monkeypatch):
         "appointment_id": d.get("appointment_id", 102) if isinstance(d, dict) else getattr(d, "appointment_id", 102),
         "animal_id": d.get("animal_id", 22) if isinstance(d, dict) else getattr(d, "animal_id", 22),
         "description": d.get("description", "Szczepienie") if isinstance(d, dict) else getattr(d, "description", "Szczepienie"),
-        "created_at": "2024-07-01T11:00:00",
-        "data_hash": "def456",
-        "blockchain_tx": "0xbeefdead"
+        "created_at": "2024-07-01T11:00:00"
     })
     r2 = client.post("/medical_records/", json={
         "appointment_id": 102,

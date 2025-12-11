@@ -1,45 +1,48 @@
 import sys
+import hashlib
+import json
+from datetime import datetime
 
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget,
-    QHBoxLayout, QVBoxLayout, QGroupBox,
-    QLabel, QPushButton, QFrame, QComboBox,
-    QTableWidget, QTableWidgetItem,
-    QCalendarWidget, QToolButton, QHeaderView,
-    QSizePolicy, QToolTip
+    QApplication,
+    QCalendarWidget,
+    QComboBox,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QToolButton,
+    QToolTip,
+    QVBoxLayout,
+    QWidget,
+    QHeaderView,
 )
-from PyQt5.QtCore import Qt, QDate, QDateTime
-from PyQt5.QtGui import (
-    QFont, QBrush, QColor, QCursor, QPen,
-    QLinearGradient, QGradient, QTextCharFormat, QPainter
-)
-from PyQt5.QtChart import (
-    QChart, QChartView,
-    QLineSeries, QAreaSeries, QScatterSeries,
-    QDateTimeAxis, QValueAxis
-)
+from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtGui import QBrush, QColor, QCursor, QFont, QTextCharFormat
 
+from vetclinic_gui.services.animals_service import AnimalService
+from vetclinic_gui.services.appointments_service import AppointmentService
 from vetclinic_gui.services.medical_records_service import MedicalRecordService
-from vetclinic_gui.services.appointments_service    import AppointmentService
-from vetclinic_gui.services.animals_service         import AnimalService
-from vetclinic_gui.services.blockchain_service import BlockchainService
+from vetclinic_gui.services import blockchain_service
+
 
 class DashboardWindow(QMainWindow):
     def __init__(self, client_id: int):
         super().__init__()
         self.client_id = client_id
-        self.blockchain = BlockchainService()
 
-        # Pobierz wszystkie zwierzęta klienta
-        self.animals = AnimalService.list_by_owner(client_id) or []  # :contentReference[oaicite:4]{index=4}
+        self.animals = AnimalService.list_by_owner(client_id) or []
         self.animal_id = self.animals[0].id if self.animals else None
 
-        # Do śledzenia podświetlonych dni w kalendarzu
         self.highlighted_dates = []
-        # Bieżące wizyty dla wybranego zwierzaka
         self.current_appointments = []
+        self.row_records = {}
 
-        self.setWindowTitle("VetClinic – Dashboard klienta")
+        self.setWindowTitle("VetClinic - Dashboard klienta")
         self.setMinimumSize(1080, 720)
         self.showMaximized()
 
@@ -52,7 +55,6 @@ class DashboardWindow(QMainWindow):
         main_layout = QHBoxLayout(central)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Panel główny
         content = QWidget()
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(20, 20, 20, 20)
@@ -60,23 +62,13 @@ class DashboardWindow(QMainWindow):
 
         content_layout.addLayout(self._create_top_bar())
         content_layout.addWidget(self._create_medical_card(), 1)
-
-        # Dolne panele: moduł blockchain + kalendarz wizyt
-        bottom = QHBoxLayout()
-        bottom.setSpacing(15)
-        # Zamiast wykresu wagi: moduł blockchain
-        self.bc_group = self._create_blockchain_module()
-        bottom.addWidget(self.bc_group, 1)
-        bottom.addWidget(self._create_clinic_visits(), 1)
-        content_layout.addLayout(bottom, 1)
+        content_layout.addWidget(self._create_clinic_visits(), 1)
 
         main_layout.addWidget(content)
-
 
     def _create_top_bar(self):
         layout = QHBoxLayout()
 
-        # ComboBox ze zwierzakami
         self.combo_animal = QComboBox()
         for animal in self.animals:
             self.combo_animal.addItem(animal.name, animal.id)
@@ -97,7 +89,8 @@ class DashboardWindow(QMainWindow):
         return layout
 
     def on_animal_changed(self, index: int):
-        """Wywoływane przy wyborze innego zwierzaka."""
+        if index < 0:
+            return
         self.animal_id = self.combo_animal.currentData()
         self.refresh_data()
 
@@ -125,29 +118,40 @@ class DashboardWindow(QMainWindow):
         group.setStyleSheet(self._groupbox_css())
         layout = QVBoxLayout(group)
 
-        # Nagłówek
-        hdr = QHBoxLayout()
+        header = QHBoxLayout()
         lbl = QLabel("Karta medyczna")
-        lbl.setFont(QFont('Arial', 12, QFont.Bold))
-        hdr.addWidget(lbl); hdr.addStretch()
-        btn = QToolButton(); btn.setText("\u22EE"); hdr.addWidget(btn)
-        layout.addLayout(hdr)
+        lbl.setFont(QFont("Arial", 12, QFont.Bold))
+        header.addWidget(lbl)
+        header.addStretch()
+        btn = QToolButton()
+        btn.setText("\u22EE")
+        header.addWidget(btn)
+        layout.addLayout(header)
 
-        # Tabela
         self.med_table = QTableWidget(0, 4)
-        self.med_table.setHorizontalHeaderLabels(["Opis", "Data wizyty", "Status", "Notatki"])
+        self.med_table.setHorizontalHeaderLabels(
+            ["Opis", "Data wizyty", "Status", "Notatki"]
+        )
         self.med_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.med_table.setSelectionMode(QTableWidget.NoSelection)
+        self.med_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.med_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.med_table.setFrameShape(QFrame.NoFrame)
         self.med_table.setShowGrid(False)
         self.med_table.verticalHeader().setVisible(False)
         self.med_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.med_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        self.med_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.med_table.horizontalHeader().setSectionResizeMode(
+            1, QHeaderView.ResizeToContents
+        )
+        self.med_table.horizontalHeader().setSectionResizeMode(
+            2, QHeaderView.ResizeToContents
+        )
         self.med_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
         self.med_table.setColumnWidth(3, 20)
-        self.med_table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.med_table.setStyleSheet("""
+        self.med_table.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents
+        )
+        self.med_table.setStyleSheet(
+            """
             QHeaderView::section {
                 background-color: #ffffff; border:none; padding:8px;
                 font-weight:600; color:#111827; border-bottom:2px solid #e5e7eb;
@@ -158,8 +162,23 @@ class DashboardWindow(QMainWindow):
             QTableWidget::item {
                 border-bottom:1px solid #e5e7eb; padding:10px 6px;
             }
-        """)
+        """
+        )
         layout.addWidget(self.med_table)
+
+        status_row = QHBoxLayout()
+        self.lbl_onchain = QLabel("On-chain: ?")
+        self.btn_chain_refresh = QPushButton("Odśwież status on-chain")
+        self.btn_chain_anchor = QPushButton("Zapisz hash w blockchainie")
+        status_row.addWidget(self.lbl_onchain)
+        status_row.addStretch()
+        status_row.addWidget(self.btn_chain_refresh)
+        status_row.addWidget(self.btn_chain_anchor)
+        layout.addLayout(status_row)
+
+        self.med_table.itemSelectionChanged.connect(self._on_record_selection)
+        self.btn_chain_refresh.clicked.connect(self._refresh_onchain_status)
+        self.btn_chain_anchor.clicked.connect(self._anchor_record_on_chain)
 
         return group
 
@@ -178,7 +197,9 @@ class DashboardWindow(QMainWindow):
         )
         self.visit_desc_lbl = QLabel()
         self.visit_desc_lbl.setWordWrap(True)
-        self.visit_desc_lbl.setStyleSheet("color: #4b5563; font-size:13px; padding:2px 8px;")
+        self.visit_desc_lbl.setStyleSheet(
+            "color: #4b5563; font-size:13px; padding:2px 8px;"
+        )
         layout.addWidget(self.visit_date_lbl)
         layout.addWidget(self.visit_desc_lbl)
 
@@ -186,29 +207,22 @@ class DashboardWindow(QMainWindow):
         return group
 
     def refresh_data(self):
-        """Pobiera i wyświetla historię wizyt + opisy medyczne dla self.animal_id."""
-
-        # 1) Pobierz wszystkie wizyty tego klienta
         try:
             all_appts = AppointmentService.list_by_owner(self.client_id) or []
-        except Exception as e:
-            QToolTip.showText(QCursor.pos(), f"Błąd pobierania wizyt: {e}")
+        except Exception as exc:
+            QToolTip.showText(QCursor.pos(), f"Błąd pobierania wizyt: {exc}")
             all_appts = []
 
-        # 2) Filtrujemy tylko wizyty dla wybranego zwierzaka
         appts = [a for a in all_appts if a.animal_id == self.animal_id]
         appts.sort(key=lambda a: a.visit_datetime, reverse=True)
         self.current_appointments = appts
 
-        # 3) Wyczyść tabelę
         self.med_table.setRowCount(0)
+        self.row_records = {}
 
-        # 4) Wypełnij każdy wiersz
         for row, appt in enumerate(appts):
-            # pobierz rekordy medyczne dla tej wizyty
             recs = MedicalRecordService.list_by_appointment(appt.id) or []
 
-            # wybierz opis: najpierw z medical_records, w przeciwnym razie z appointment.reason
             if recs:
                 desc = " | ".join(r.description for r in recs if r.description)
             else:
@@ -216,36 +230,46 @@ class DashboardWindow(QMainWindow):
 
             self.med_table.insertRow(row)
 
-            # kolumna 0: Opis
             item_desc = QTableWidgetItem(desc)
             item_desc.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             self.med_table.setItem(row, 0, item_desc)
 
-            # kolumna 1: Data wizyty
             dt_str = appt.visit_datetime.strftime("%d.%m.%Y, %H:%M")
             item_dt = QTableWidgetItem(dt_str)
             item_dt.setTextAlignment(Qt.AlignCenter)
-            item_dt.setForeground(QBrush(QColor('#F53838')))
+            item_dt.setForeground(QBrush(QColor("#F53838")))
             self.med_table.setItem(row, 1, item_dt)
 
-            # kolumna 2: Status / priorytet
             item_status = QTableWidgetItem(appt.priority or "")
             item_status.setTextAlignment(Qt.AlignCenter)
             self.med_table.setItem(row, 2, item_status)
 
-            # kolumna 3: Notatki
             item_notes = QTableWidgetItem(appt.notes or "")
             item_notes.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             self.med_table.setItem(row, 3, item_notes)
 
-        # — Kalendarz wizyt —
+            latest_record = None
+            if recs:
+                latest_record = sorted(
+                    recs, key=lambda r: getattr(r, "created_at", datetime.min)
+                )[-1]
+            self.row_records[row] = latest_record
+
+        if self.med_table.rowCount() > 0:
+            self.med_table.selectRow(0)
+            self._refresh_onchain_status()
+        else:
+            self.lbl_onchain.setText("On-chain: brak rekordów")
+
         for d in self.highlighted_dates:
             self.clinic_calendar.setDateTextFormat(d, QTextCharFormat())
         self.highlighted_dates.clear()
         days = {
-            QDate(a.visit_datetime.date().year,
-                  a.visit_datetime.date().month,
-                  a.visit_datetime.date().day)
+            QDate(
+                a.visit_datetime.date().year,
+                a.visit_datetime.date().month,
+                a.visit_datetime.date().day,
+            )
             for a in appts
         }
         fmt = QTextCharFormat()
@@ -254,63 +278,94 @@ class DashboardWindow(QMainWindow):
             self.clinic_calendar.setDateTextFormat(d, fmt)
         self.highlighted_dates = list(days)
         self._clinic_on_date_changed()
-        self._load_blockchain_history()
 
     def _clinic_on_date_changed(self):
         sel = self.clinic_calendar.selectedDate().toPyDate()
         todays = [a for a in self.current_appointments if a.visit_datetime.date() == sel]
         if not todays:
-            self.visit_date_lbl.clear(); self.visit_desc_lbl.clear()
+            self.visit_date_lbl.clear()
+            self.visit_desc_lbl.clear()
             return
-        ap = sorted(todays, key=lambda x: x.visit_datetime)[0]
-        self.visit_date_lbl.setText(ap.visit_datetime.strftime("%d.%m.%Y, %H:%M"))
-        desc = ap.reason or ""
-        doc  = f"Dr {ap.doctor.first_name} {ap.doctor.last_name}"
-        self.visit_desc_lbl.setText(f"{desc} — {doc}")
+        appt = sorted(todays, key=lambda x: x.visit_datetime)[0]
+        self.visit_date_lbl.setText(appt.visit_datetime.strftime("%d.%m.%Y, %H:%M"))
+        desc = appt.reason or ""
+        doc = f"Dr {appt.doctor.first_name} {appt.doctor.last_name}"
+        self.visit_desc_lbl.setText(f"{desc} - {doc}")
 
-    def _create_blockchain_module(self) -> QGroupBox:
-        group = QGroupBox("Historia z blockchaina")
-        group.setStyleSheet(self._groupbox_css())
-        layout = QVBoxLayout(group)
+    def _on_record_selection(self):
+        self._refresh_onchain_status()
 
-        self.bc_table = QTableWidget(0, 4)
-        self.bc_table.setHorizontalHeaderLabels(["Data", "Lekarz", "Opis", "Tx Hash"])
-        self.bc_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        layout.addWidget(self.bc_table)
-        return group
+    def _get_selected_record(self):
+        selection = self.med_table.selectionModel()
+        if not selection:
+            return None
+        rows = selection.selectedRows()
+        if not rows:
+            return None
+        row = rows[0].row()
+        return self.row_records.get(row)
 
-    def _load_blockchain_history(self):
-        """
-        Ładuje historię medyczną z blockchainu pod konto serwisowe i wyświetla w tabeli.
-        """
-        # Jeśli brak zwierząt, nic nie rób
-        if not self.animals:
+    def _record_as_dict(self, record):
+        return {
+            "id": record.id,
+            "description": record.description or "",
+            "appointment_id": record.appointment_id,
+            "animal_id": record.animal_id,
+            "created_at": record.created_at.isoformat()
+            if getattr(record, "created_at", None)
+            else "",
+        }
+
+    def _compute_record_hash(self, record):
+        data = json.dumps(self._record_as_dict(record), sort_keys=True).encode("utf-8")
+        return hashlib.sha256(data).hexdigest()
+
+    def _refresh_onchain_status(self):
+        record = self._get_selected_record()
+        if record is None:
+            self.lbl_onchain.setText("On-chain: brak rekordu")
             return
-
-        # Spróbuj pobrać historię on-chain dla service_account
         try:
-            records = self.blockchain.get_medical_history()
-        except ConnectionError as e:
-            QToolTip.showText(QCursor.pos(), f"Blockchain error: {e}")
-            return
-        except Exception as e:
-            QToolTip.showText(QCursor.pos(), f"Nie udało się pobrać historii z blockchaina: {e}")
+            chain_rec = blockchain_service.get_record_on_chain(record.id)
+        except Exception as exc:
+            self.lbl_onchain.setText(f"On-chain: BŁĄD ({exc})")
             return
 
-        # Wyczyść tabelę i wypełnij, jeśli mamy rekordy
-        self.bc_table.setRowCount(0)
-        for row, rec in enumerate(records):
-            self.bc_table.insertRow(row)
-            # Data
-            date_str = rec['date'].strftime("%d.%m.%Y %H:%M")
-            self.bc_table.setItem(row, 0, QTableWidgetItem(date_str))
-            # Lekarz (owner)
-            self.bc_table.setItem(row, 1, QTableWidgetItem(rec['owner']))
-            # Hash danych
-            self.bc_table.setItem(row, 2, QTableWidgetItem(rec['data_hash']))
-            # Tx hash (lub "-")
-            tx_hash = rec.get('tx_hash') or "-"
-            self.bc_table.setItem(row, 3, QTableWidgetItem(tx_hash))
+        local_hash = self._compute_record_hash(record)
+        if chain_rec is None:
+            self.lbl_onchain.setText("On-chain: NIE")
+            return
+
+        on_hash = chain_rec.get("data_hash")
+        if on_hash == local_hash:
+            block_idx = chain_rec.get("block_index")
+            self.lbl_onchain.setText(f"On-chain: TAK (blok #{block_idx})")
+        else:
+            self.lbl_onchain.setText(
+                f"On-chain: ROZBIEŻNY (on-chain {on_hash[:8]}..., lokalny {local_hash[:8]}...)"
+            )
+
+    def _anchor_record_on_chain(self):
+        record = self._get_selected_record()
+        if record is None:
+            QMessageBox.warning(self, "Blockchain", "Brak rekordu do zapisania.")
+            return
+        local_hash = self._compute_record_hash(record)
+        try:
+            blockchain_service.add_record_on_chain(
+                record_id=record.id,
+                data_hash=local_hash,
+                owner=str(self.client_id),
+            )
+        except Exception as exc:
+            QMessageBox.critical(
+                self, "Blockchain", f"Błąd wysyłania transakcji: {exc}"
+            )
+            return
+        QMessageBox.information(
+            self, "Blockchain", "Hash rekordu został wysłany jako transakcja."
+        )
+        self._refresh_onchain_status()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  node3:
+    environment:
+      FAULT_OFFLINE: "true"
+  node4:
+    environment:
+      FAULT_SLOW_MS: "5000"

@@ -408,3 +408,44 @@
 2025-07-04 07:43:36,291 DEBUG      STATUS: 200
 2025-07-04 07:43:36,291 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
 2025-07-04 07:43:36,291 DEBUG      TEXT:   fail…
+2025-11-20 18:50:23,797 DEBUG    → PAYU AUTH REQUEST
+2025-11-20 18:50:23,797 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-11-20 18:50:23,797 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-11-20 18:50:23,798 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-11-20 18:50:23,798 DEBUG    ← PAYU AUTH RESPONSE
+2025-11-20 18:50:23,798 DEBUG      STATUS: 200
+2025-11-20 18:50:23,798 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-11-20 18:50:23,798 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-11-20 18:50:23,799 DEBUG    → PAYU AUTH REQUEST
+2025-11-20 18:50:23,799 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-11-20 18:50:23,799 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-11-20 18:50:23,799 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-11-20 18:50:23,799 DEBUG    ← PAYU AUTH RESPONSE
+2025-11-20 18:50:23,799 DEBUG      STATUS: 200
+2025-11-20 18:50:23,799 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-11-20 18:50:23,799 DEBUG      TEXT:   fail…
+2025-11-20 18:50:23,800 DEBUG    → PAYU ORDER REQUEST
+2025-11-20 18:50:23,800 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-11-20 18:50:23,800 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-11-20 18:50:23,800 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1763661023', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-11-20 18:50:23,800 DEBUG    ← PAYU ORDER RESPONSE
+2025-11-20 18:50:23,800 DEBUG      STATUS: 200
+2025-11-20 18:50:23,800 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-11-20 18:50:23,800 DEBUG      TEXT:   {"res":1}…
+2025-11-20 18:50:23,801 DEBUG    → PAYU ORDER REQUEST
+2025-11-20 18:50:23,801 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-11-20 18:50:23,801 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-11-20 18:50:23,801 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1763661023', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-11-20 18:50:23,801 DEBUG    ← PAYU ORDER RESPONSE
+2025-11-20 18:50:23,801 DEBUG      STATUS: 302
+2025-11-20 18:50:23,801 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-11-20 18:50:23,802 DEBUG      TEXT:   …
+2025-11-20 18:50:23,802 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-11-20 18:50:23,803 DEBUG    → PAYU ORDER REQUEST
+2025-11-20 18:50:23,803 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-11-20 18:50:23,803 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-11-20 18:50:23,803 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1763661023', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-11-20 18:50:23,803 DEBUG    ← PAYU ORDER RESPONSE
+2025-11-20 18:50:23,803 DEBUG      STATUS: 200
+2025-11-20 18:50:23,803 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-11-20 18:50:23,803 DEBUG      TEXT:   fail…
