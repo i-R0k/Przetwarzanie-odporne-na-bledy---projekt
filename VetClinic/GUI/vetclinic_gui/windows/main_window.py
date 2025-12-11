@@ -11,6 +11,7 @@ from .Admin.facilitys import FacilitiesPage
 from .Admin.consultants import ConsultantsPage
 from .Admin.doctors import DoctorsPage
 from .Admin.clients import ClientsPage
+from .Admin.cluster_admin_widget import ClusterAdminWidget
 
 from .Receptionist.dashboard import ReceptionistDashboardPage
 from .Receptionist.client_registration import RegistrationPage
@@ -23,7 +24,6 @@ from .Doctor.visit import VisitsWindow
 
 from .Client.dashboard import DashboardWindow
 from .Client.invoices import InvoicesWindow
-from vetclinic_gui.windows.Admin.cluster_admin_widget import ClusterAdminWidget
 
 class MainWindow(QMainWindow):
     def __init__(

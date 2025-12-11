@@ -6,6 +6,7 @@ Create Date: 2025-05-17 18:02:42.593631
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 # revision identifiers, used by Alembic.
 revision = 'a98c1d85e253'
@@ -14,27 +15,40 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # jeśli została stara tmp‐tabela, usuń ją
-    op.execute('DROP TABLE IF EXISTS "_alembic_tmp_consultants"')
+    """Dodanie backup_email i must_change_password do consultants, bez batch_alter_table."""
 
-    # dodajemy kolumny w batch‐mode z domyślnymi wartościami,
-    # by migracja przeszła na SQLite
-    with op.batch_alter_table('consultants', schema=None) as batch_op:
-        batch_op.add_column(sa.Column(
-            'backup_email',
-            sa.String(),
-            nullable=False,
-            server_default=''
-        ))
-        batch_op.add_column(sa.Column(
-            'must_change_password',
-            sa.Boolean(),
-            nullable=False,
-            server_default=sa.sql.expression.true()
-        ))
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    columns = [col["name"] for col in inspector.get_columns("consultants")]
+
+    if "backup_email" not in columns:
+        op.add_column(
+            "consultants",
+            sa.Column(
+                "backup_email",
+                sa.String(length=255),
+                nullable=True,
+            ),
+        )
+
+    if "must_change_password" not in columns:
+        op.add_column(
+            "consultants",
+            sa.Column(
+                "must_change_password",
+                sa.Boolean(),
+                nullable=False,
+                server_default="0",
+            ),
+        )
+
 
 def downgrade() -> None:
-    # usuwamy kolumny w batch‐mode
-    with op.batch_alter_table('consultants', schema=None) as batch_op:
-        batch_op.drop_column('must_change_password')
-        batch_op.drop_column('backup_email')
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    columns = [col["name"] for col in inspector.get_columns("consultants")]
+
+    if "must_change_password" in columns:
+        op.drop_column("consultants", "must_change_password")
+    if "backup_email" in columns:
+        op.drop_column("consultants", "backup_email")

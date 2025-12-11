@@ -15,8 +15,8 @@ class BlockDB(Base):
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     nonce = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
-    merkle_root = Column(String(128), nullable=False, default="")
-    leader_sig = Column(Text, nullable=False, default="")
+    merkle_root = Column(String(128), nullable=True, default="")
+    leader_sig = Column(Text, nullable=True, default="")
 
     transactions = relationship(
         "TransactionDB", back_populates="block", cascade="all, delete-orphan"
@@ -29,10 +29,10 @@ class TransactionDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     block_id = Column(Integer, ForeignKey("blocks.id"), nullable=True, index=True)
 
-    tx_id = Column(String(128), nullable=False, unique=True)
-    payload = Column(Text, nullable=False)
-    sender_pub = Column(String(256), nullable=False)
-    signature = Column(Text, nullable=False)
+    tx_id = Column(String(128), nullable=True, unique=True)
+    payload = Column(Text, nullable=True)
+    sender_pub = Column(String(256), nullable=True)
+    signature = Column(Text, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     committed = Column(Boolean, default=False, nullable=False)
 

@@ -13,15 +13,16 @@ def upgrade() -> None:
     Upgrade schema: drop legacy invoices, ensure no orphaned temp table,
     add wallet_address to clients, add fee to appointments.
     """
-    # Drop legacy invoices table if it exists
-    op.drop_table('invoices')
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+
+    tables = inspector.get_table_names()
+    if 'invoices' in tables:
+        op.drop_table('invoices')
 
     # Clean up any stray batch-alter temp table from previous failures
     op.execute("DROP TABLE IF EXISTS _alembic_tmp_clients")
 
-    # Get DB connection and inspector to guard against duplicate columns
-    conn = op.get_bind()
-    inspector = sa.inspect(conn)
     existing_cols = [col['name'] for col in inspector.get_columns('clients')]
 
     # Add wallet_address to clients if not already present
