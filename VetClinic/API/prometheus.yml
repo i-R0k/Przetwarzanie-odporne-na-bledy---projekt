@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "vetclinic_nodes"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - node1:8000
+          - node2:8000
+          - node3:8000
+          - node4:8000
+          - node5:8000
+          - node6:8000
+        labels:
+          project: "vetclinic"

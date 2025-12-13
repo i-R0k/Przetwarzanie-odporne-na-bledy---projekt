@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import uvicorn
 
+from vetclinic_api.metrics import metrics_router, instrumentator_middleware
 from vetclinic_api.routers import (
     users,
     doctors,
@@ -34,6 +35,7 @@ app = FastAPI(
 )
 
 # Rejestracja routerów
+app.include_router(metrics_router)
 app.include_router(users.router)
 app.include_router(doctors.router)
 app.include_router(consultants.router)
@@ -50,6 +52,8 @@ app.include_router(rpc.router)
 app.include_router(cluster.router)
 app.include_router(admin.router)
  
+
+app.middleware("http")(instrumentator_middleware)
 
 # Tworzenie tabel w bazie danych (jeśli nie istnieją)
 Base.metadata.create_all(bind=engine)
