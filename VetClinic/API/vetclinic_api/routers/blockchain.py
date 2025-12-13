@@ -1,5 +1,6 @@
 import hashlib
 import json
+import time
 from datetime import datetime
 from decimal import Decimal
 
@@ -26,6 +27,14 @@ from vetclinic_api.crypto.ed25519 import (
     load_leader_keys_from_env,
     sign_message,
 )
+from vetclinic_api.metrics import (
+    NODE_NAME,
+    chain_verify_duration_seconds,
+    chain_verify_total,
+    inc_tx_rejected,
+    inc_tx_submitted,
+    set_chain_status,
+)
 
 router = APIRouter(tags=["blockchain"])
 
@@ -51,6 +60,7 @@ async def submit_transaction(
 ):
     if CONFIG.node_id != CONFIG.leader_id:
         if not CONFIG.leader_url:
+            inc_tx_rejected("exception")
             raise HTTPException(status_code=500, detail="Leader URL not configured")
         try:
             resp = await client.post(
@@ -58,6 +68,7 @@ async def submit_transaction(
                 json=tx.model_dump(mode="json"),
             )
         except httpx.HTTPError as exc:
+            inc_tx_rejected("exception")
             raise HTTPException(
                 status_code=502,
                 detail=f"Leader unreachable: {exc}",
@@ -70,29 +81,47 @@ async def submit_transaction(
 
         return JSONResponse(status_code=resp.status_code, content=payload)
 
-    payload = TxPayload(
-        sender=tx.sender,
-        recipient=tx.recipient,
-        amount=Decimal(str(tx.amount)),
-    )
-    timestamp = datetime.utcnow()
-    raw = json.dumps(
-        {"payload": payload.model_dump(mode="json"), "timestamp": timestamp.isoformat()},
-        sort_keys=True,
-    ).encode("utf-8")
-    tx_id = hashlib.sha256(raw).hexdigest()
+    try:
+        payload = TxPayload(
+            sender=tx.sender,
+            recipient=tx.recipient,
+            amount=Decimal(str(tx.amount)),
+        )
+        timestamp = datetime.utcnow()
+        raw = json.dumps(
+            {"payload": payload.model_dump(mode="json"), "timestamp": timestamp.isoformat()},
+            sort_keys=True,
+        ).encode("utf-8")
+        tx_id = hashlib.sha256(raw).hexdigest()
 
-    keys = load_leader_keys_from_env()
-    signature = sign_message(keys.priv, raw)
+        keys = load_leader_keys_from_env()
+        signature = sign_message(keys.priv, raw)
 
-    transaction = Transaction(
-        id=tx_id,
-        payload=payload,
-        sender_pub="demo-sender-pub",
-        signature=signature,
-        timestamp=timestamp,
-    )
-    storage.add_transaction(transaction)
+        transaction = Transaction(
+            id=tx_id,
+            payload=payload,
+            sender_pub="demo-sender-pub",
+            signature=signature,
+            timestamp=timestamp,
+        )
+        storage.add_transaction(transaction)
+    except ValueError:
+        inc_tx_rejected("validation")
+        raise
+    except Exception:
+        inc_tx_rejected("exception")
+        raise
+
+    # Broadcast transaction to peers so each keeps it in mempool.
+    for base_url in CONFIG.peers:
+        url = f"{base_url.rstrip('/')}/tx/receive"
+        try:
+            await client.post(url, json=transaction.model_dump(mode="json"))
+        except Exception:
+            # Best-effort: nie blokujemy lokalnej akceptacji.
+            continue
+
+    inc_tx_submitted()
     return {"status": "accepted"}
 
 
@@ -105,14 +134,31 @@ def chain_status(
     state = BlockchainState(chain=chain, mempool=mempool)
 
     last_block_hash = compute_block_hash(chain[-1]) if chain else None
+    height = len(chain) - 1 if chain else -1
+    mempool_size = len(mempool)
+
+    set_chain_status(height=height, mempool_size=mempool_size)
 
     return {
-        "height": len(chain) - 1 if chain else -1,
+        "height": height,
         "last_block_hash": last_block_hash,
-        "mempool_size": len(mempool),
+        "mempool_size": mempool_size,
         "chain": state.chain,
         "mempool": state.mempool,
     }
+
+
+@router.post("/tx/receive", status_code=202, include_in_schema=False)
+async def receive_transaction(
+    tx: Transaction,
+    storage: Storage = Depends(get_storage),
+):
+    try:
+        storage.add_transaction(tx)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to enqueue transaction")
+
+    return {"status": "queued"}
 
 
 @router.post("/chain/mine")
@@ -140,7 +186,18 @@ def mine_block_endpoint(
 async def verify_chain_endpoint(
     storage: Storage = Depends(get_storage),
 ):
-    return verify_chain(storage)
+    start = time.perf_counter()
+    try:
+        result = verify_chain(storage)
+        ok = bool(result.get("valid"))
+        chain_verify_total.labels(NODE_NAME, "ok" if ok else "invalid").inc()
+        return result
+    except Exception:
+        chain_verify_total.labels(NODE_NAME, "error").inc()
+        raise
+    finally:
+        elapsed = time.perf_counter() - start
+        chain_verify_duration_seconds.labels(NODE_NAME).observe(elapsed)
 
 
 @router.post("/chain/mine_distributed")

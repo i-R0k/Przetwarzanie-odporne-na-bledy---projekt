@@ -20,64 +20,30 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    conn = op.get_bind()
-    insp = inspect(conn)
-    existing = {c["name"] for c in insp.get_columns("appointments")}
+    """Add treatment, priority, weight to appointments if they don't exist."""
 
-    # 1) Add treatment if missing
-    if "treatment" not in existing:
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    columns = [col["name"] for col in inspector.get_columns("appointments")]
+
+    if "treatment" not in columns:
         op.add_column(
             "appointments",
-            sa.Column(
-                "treatment",
-                sa.Text(),
-                nullable=True,
-                comment="Zastosowane leczenie podczas wizyty",
-            ),
+            sa.Column("treatment", sa.String(length=255), nullable=True),
         )
 
-    # 2) Add priority if missing (with temporary server_default so SQLite can backfill)
-    if "priority" not in existing:
+    if "priority" not in columns:
         op.add_column(
             "appointments",
-            sa.Column(
-                "priority",
-                sa.String(),
-                nullable=False,
-                server_default="normalna",
-                comment="Priorytet wizyty: normalna,pilna,nagła",
-            ),
+            sa.Column("priority", sa.Integer(), nullable=True),
         )
-        # remove the default so future INSERTs require an explicit value
-        op.alter_column("appointments", "priority", server_default=None)
 
-    # 3) Add weight if missing
-    if "weight" not in existing:
+    if "weight" not in columns:
         op.add_column(
             "appointments",
-            sa.Column(
-                "weight",
-                sa.Float(),
-                nullable=True,
-                comment="Waga zwierzęcia podczas wizyty",
-            ),
+            sa.Column("weight", sa.Float(), nullable=True),
         )
 
-    # 4) Drop old status column only if it’s still there
-    if "status" in existing:
-        op.drop_column("appointments", "status")
-
-    # 5) Fix the foreign key on medical_records
-    #    Drop the old FK (unnamed) and recreate it pointing to animals.id with ON DELETE CASCADE
-    op.drop_constraint(None, "medical_records", type_="foreignkey")
-    op.create_foreign_key(
-        None,
-        "medical_records",
-        "animals",
-        ["animal_id"],
-        ["id"],
-        ondelete="CASCADE",
-    )
 
 
 

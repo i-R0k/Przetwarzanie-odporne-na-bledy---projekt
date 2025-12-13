@@ -1,0 +1,204 @@
+{
+  "uid": "vetclinic-monitoring",
+  "title": "VetClinic / Blockchain Monitoring",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "tags": ["vetclinic", "prometheus", "blockchain"],
+  "time": { "from": "now-15m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "job",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+        "query": "label_values(up, job)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "current": { "selected": true, "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Cluster Overview",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "id": 1
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "UP (instances)",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 0, "y": 1, "w": 6, "h": 5 },
+      "targets": [
+        {
+          "expr": "sum(up{job=~\"$job\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "RPS (all)",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 6, "y": 1, "w": 9, "h": 5 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=~\"$job\"}[1m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "HTTP 5xx rate",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 15, "y": 1, "w": 9, "h": 5 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=~\"$job\",status=~\"5..\"}[1m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "p95 request latency (seconds)",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 0, "y": 6, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~\"$job\"}[2m])) by (le))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Blockchain height (min/max)",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 6 },
+      "targets": [
+        { "expr": "max(blockchain_chain_height{job=~\"$job\"})", "refId": "A", "legendFormat": "max" },
+        { "expr": "min(blockchain_chain_height{job=~\"$job\"})", "refId": "B", "legendFormat": "min" }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Mempool size (sum)",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 6 },
+      "targets": [
+        { "expr": "sum(blockchain_mempool_size{job=~\"$job\"})", "refId": "A" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Tx submitted rate",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 6 },
+      "targets": [
+        { "expr": "sum(rate(tx_submitted_total{job=~\"$job\"}[1m]))", "refId": "A" }
+      ]
+    },
+
+    {
+      "type": "row",
+      "title": "Per-node",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 1 },
+      "id": 20
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Chain height by instance",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 0, "y": 19, "w": 12, "h": 7 },
+      "targets": [
+        { "expr": "blockchain_chain_height{job=~\"$job\"}", "refId": "A", "legendFormat": "{{instance}}" }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Mempool size by instance",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 12, "y": 19, "w": 12, "h": 7 },
+      "targets": [
+        { "expr": "blockchain_mempool_size{job=~\"$job\"}", "refId": "A", "legendFormat": "{{instance}}" }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "CPU seconds rate by instance",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 0, "y": 26, "w": 12, "h": 7 },
+      "targets": [
+        { "expr": "rate(process_cpu_seconds_total{job=~\"$job\"}[1m])", "refId": "A", "legendFormat": "{{instance}}" }
+      ]
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "Resident memory by instance",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 12, "y": 26, "w": 12, "h": 7 },
+      "targets": [
+        { "expr": "process_resident_memory_bytes{job=~\"$job\"}", "refId": "A", "legendFormat": "{{instance}}" }
+      ]
+    },
+
+    {
+      "type": "row",
+      "title": "Endpoints",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 33, "w": 24, "h": 1 },
+      "id": 40
+    },
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "RPS by path",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=~\"$job\"}[1m])) by (path)",
+          "refId": "A",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "type": "timeseries",
+      "title": "p95 latency by path",
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
+      "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~\"$job\"}[2m])) by (le, path))",
+          "refId": "A",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+groups:
+  - name: vetclinic_blockchain_alerts
+    rules:
+      # 1) Node/instance down
+      - alert: InstanceDown
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance down"
+          description: "Prometheus nie scrapuje {{ $labels.instance }} (job={{ $labels.job }}) przez 30s."
+
+      # 2) High error rate (5xx) - procent błędów per job
+      - alert: HighHttp5xxErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[2m])) by (job)
+            /
+            sum(rate(http_requests_total[2m])) by (job)
+          ) > 0.02
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Wysoki % 5xx"
+          description: "Job={{ $labels.job }} ma >2% odpowiedzi 5xx przez 2 min."
+
+      # 3) Height divergence (różne wysokości na nodach)
+      # UWAGA: to zadziała sensownie dopiero jak metryka ma label node/instance per węzeł.
+      - alert: ChainHeightDivergence
+        expr: |
+          (max(blockchain_chain_height) - min(blockchain_chain_height)) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rozjazd chain height"
+          description: "Różnica height między węzłami > 0 przez 1 min. Ktoś nie nadąża."

@@ -199,7 +199,7 @@ class ClusterAdminWidget(QtWidgets.QWidget):
             for col in range(6):
                 item = self.table.item(row, col)
                 if item:
-                    item.setBackground(QtCore.Qt.NoBrush)
+                    item.setBackground(QtGui.QBrush(QtCore.Qt.NoBrush))
 
             color = None
             desc = faults_desc or ""

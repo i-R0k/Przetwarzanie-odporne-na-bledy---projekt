@@ -2,6 +2,7 @@
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 # revision identifiers, used by Alembic.
 revision = 'e2e464860f55'
@@ -10,42 +11,44 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # usuń pozostałości po poprzedniej próbie
-    op.execute("DROP TABLE IF EXISTS _alembic_tmp_clients")
-    # --- migracja dla clients ---
-    with op.batch_alter_table('clients') as batch_op:
-        batch_op.add_column(sa.Column(
-            'backup_email',
-            sa.String(),
-            nullable=False,
-            server_default=''
-        ))
-        batch_op.add_column(sa.Column(
-            'must_change_password',
-            sa.Boolean(),
-            nullable=False,
-            server_default=sa.false()
-        ))
-    # --- migracja dla doctors ---
-    with op.batch_alter_table('doctors') as batch_op:
-        batch_op.add_column(sa.Column(
-            'backup_email',
-            sa.String(),
-            nullable=False,
-            server_default=''
-        ))
-        batch_op.add_column(sa.Column(
-            'must_change_password',
-            sa.Boolean(),
-            nullable=False,
-            server_default=sa.false()
-        ))
+    """Add login safety fields to clients and doctors without batch operations."""
+
+    bind = op.get_bind()
+    inspector = inspect(bind)
+
+    for table in ("clients", "doctors"):
+        columns = [col["name"] for col in inspector.get_columns(table)]
+
+        if "backup_email" not in columns:
+            op.add_column(
+                table,
+                sa.Column(
+                    "backup_email",
+                    sa.String(length=255),
+                    nullable=True,
+                ),
+            )
+
+        if "must_change_password" not in columns:
+            op.add_column(
+                table,
+                sa.Column(
+                    "must_change_password",
+                    sa.Boolean(),
+                    nullable=False,
+                    server_default="0",
+                ),
+            )
 
 
 def downgrade() -> None:
-    with op.batch_alter_table('doctors') as batch_op:
-        batch_op.drop_column('must_change_password')
-        batch_op.drop_column('backup_email')
-    with op.batch_alter_table('clients') as batch_op:
-        batch_op.drop_column('must_change_password')
-        batch_op.drop_column('backup_email')
+    bind = op.get_bind()
+    inspector = inspect(bind)
+
+    for table in ("doctors", "clients"):
+        columns = [col["name"] for col in inspector.get_columns(table)]
+
+        if "must_change_password" in columns:
+            op.drop_column(table, "must_change_password")
+        if "backup_email" in columns:
+            op.drop_column(table, "backup_email")

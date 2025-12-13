@@ -19,6 +19,7 @@ from vetclinic_api.crypto.ed25519 import (
 )
 
 DIFFICULTY_PREFIX = "0000"
+GENESIS_TIMESTAMP = datetime(2025, 1, 1, 0, 0, 0)
 
 
 class TxPayload(BaseModel):
@@ -64,6 +65,21 @@ class BlockchainState(BaseModel):
 class BlockProposal(BaseModel):
     block: Block
     hash: str
+
+
+def build_genesis_block() -> Block:
+    """
+    Build deterministic genesis block so every node shares identical hash.
+    """
+    return Block(
+        index=0,
+        previous_hash="0" * 64,
+        timestamp=GENESIS_TIMESTAMP,
+        transactions=[],
+        nonce=0,
+        merkle_root=compute_merkle_root([]),
+        leader_sig="",
+    )
 
 
 def compute_merkle_root(txs: List[Transaction]) -> str:
@@ -137,14 +153,7 @@ class InMemoryStorage(Storage):
         self._mempool: List[Transaction] = []
 
         if not self._chain:
-            genesis = Block(
-                index=0,
-                previous_hash="0" * 64,
-                transactions=[],
-                nonce=0,
-                merkle_root=compute_merkle_root([]),
-                leader_sig="",
-            )
+            genesis = build_genesis_block()
             self._chain.append(genesis)
 
     def get_chain(self) -> List[Block]:
@@ -202,14 +211,7 @@ class SQLAlchemyStorage(Storage):
                 )
 
             if not result:
-                genesis = Block(
-                    index=0,
-                    previous_hash="0" * 64,
-                    transactions=[],
-                    nonce=0,
-                    merkle_root=compute_merkle_root([]),
-                    leader_sig="",
-                )
+                genesis = build_genesis_block()
                 self._persist_block(genesis, db=db)
                 result = [genesis]
             return result
