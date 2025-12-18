@@ -1,7 +1,6 @@
 groups:
-  - name: vetclinic_blockchain_alerts
+  - name: vetclinic-alerts
     rules:
-      # 1) Node/instance down
       - alert: InstanceDown
         expr: up == 0
         for: 30s
@@ -9,31 +8,40 @@ groups:
           severity: critical
         annotations:
           summary: "Instance down"
-          description: "Prometheus nie scrapuje {{ $labels.instance }} (job={{ $labels.job }}) przez 30s."
+          description: "Target {{ $labels.instance }} (job={{ $labels.job }}) is down for 30s."
 
-      # 2) High error rate (5xx) - procent błędów per job
-      - alert: HighHttp5xxErrorRate
+      - alert: HighErrorRate
         expr: |
           (
-            sum(rate(http_requests_total{status=~"5.."}[2m])) by (job)
+            sum(rate(http_requests_total{status=~"5.."}[2m]))
             /
-            sum(rate(http_requests_total[2m])) by (job)
+            sum(rate(http_requests_total[2m]))
           ) > 0.02
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High 5xx error rate"
+          description: "5xx ratio > 2% for 3m (check services/endpoints)."
+
+      - alert: HeightDivergence
+        expr: |
+          (max(blockchain_chain_height) - min(blockchain_chain_height)) > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Blockchain height divergence"
+          description: "Nodes disagree on chain height for 2m. max-min={{ $value }}"
+
+      - alert: ConsensusStuck
+        expr: |
+          max_over_time(blockchain_chain_height[3m]) - min_over_time(blockchain_chain_height[3m]) == 0
+          and
+          sum(rate(tx_submitted_total[3m])) > 0
         for: 2m
         labels:
           severity: warning
         annotations:
-          summary: "Wysoki % 5xx"
-          description: "Job={{ $labels.job }} ma >2% odpowiedzi 5xx przez 2 min."
-
-      # 3) Height divergence (różne wysokości na nodach)
-      # UWAGA: to zadziała sensownie dopiero jak metryka ma label node/instance per węzeł.
-      - alert: ChainHeightDivergence
-        expr: |
-          (max(blockchain_chain_height) - min(blockchain_chain_height)) > 0
-        for: 1m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Rozjazd chain height"
-          description: "Różnica height między węzłami > 0 przez 1 min. Ktoś nie nadąża."
+          summary: "Consensus stuck while traffic exists"
+          description: "Height not increasing for 5m while tx are being submitted."

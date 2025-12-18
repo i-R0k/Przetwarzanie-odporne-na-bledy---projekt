@@ -61,7 +61,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PROMETHEUS_DS"
       },
       "description": "Ile targetów Prometheusa jest UP (po instance).",
       "fieldConfig": {
@@ -102,7 +102,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
       "description": "HTTP request rate per node (instance).",
       "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
       "gridPos": { "h": 9, "w": 18, "x": 6, "y": 0 },
@@ -125,7 +125,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
       "description": "Blockchain height per node (instance).",
       "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] },
       "gridPos": { "h": 9, "w": 12, "x": 0, "y": 5 },
@@ -148,7 +148,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
       "description": "Mempool size per node (instance).",
       "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] },
       "gridPos": { "h": 9, "w": 12, "x": 12, "y": 9 },
@@ -171,7 +171,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
       "description": "Rate of accepted tx submissions (cluster-wide).",
       "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
       "gridPos": { "h": 9, "w": 12, "x": 0, "y": 14 },
@@ -194,7 +194,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
       "description": "Chain verify runs per node (rate).",
       "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
       "gridPos": { "h": 9, "w": 12, "x": 12, "y": 18 },
@@ -225,7 +225,7 @@
     "list": [
       {
         "current": { "selected": false, "text": "All", "value": ".*" },
-        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "datasource": { "type": "prometheus", "uid": "PROMETHEUS_DS" },
         "definition": "label_values(up, instance)",
         "hide": 0,
         "includeAll": true,

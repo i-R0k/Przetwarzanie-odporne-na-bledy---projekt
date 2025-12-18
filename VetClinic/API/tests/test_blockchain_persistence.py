@@ -41,4 +41,6 @@ def test_chain_persists_between_restarts():
     assert status_2["mempool_size"] == 0
     assert len(status_2["chain"]) == len(status_1["chain"])
     assert status_2["chain"][-1]["transactions"]
-    assert status_2["chain"][-1]["transactions"][0]["sender"] == "alice"
+    payload = status_2["chain"][-1]["transactions"][0]["payload"]
+    assert payload["sender"] == "alice"
+    assert payload["recipient"] == "bob"

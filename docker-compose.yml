@@ -123,3 +123,20 @@ services:
       - ./grafana/dashboards:/etc/grafana/dashboards:ro
     depends_on:
       - prometheus
+
+  trafficgen:
+    build:
+      context: ./trafficgen
+    container_name: trafficgen
+    environment:
+      - ADMIN_API=http://node1:8000
+      - LEADER_URL=http://node1:8000
+      - NODES=http://node1:8000,http://node2:8000,http://node3:8000,http://node4:8000,http://node5:8000,http://node6:8000
+    depends_on:
+      - node1
+      - node2
+      - node3
+      - node4
+      - node5
+      - node6
+    restart: unless-stopped
