@@ -1,11 +1,8 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from PyQt5.QtWidgets import QApplication, QTableWidgetItem, QMessageBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QTableWidgetItem, QMessageBox
 pytestmark = pytest.mark.gui
-
-@pytest.fixture(scope="session")
-def app():
-    return QApplication([])
 
 import gc
 import pytest
@@ -14,8 +11,8 @@ import pytest
 def cleanup_qt_widgets():
     yield
     # Wymuś zbieranie śmieci i zamknięcie okien po każdym teście
-    import PyQt5.QtWidgets
-    for widget in PyQt5.QtWidgets.QApplication.allWidgets():
+    import PyQt6.QtWidgets
+    for widget in PyQt6.QtWidgets.QApplication.allWidgets():
         try:
             widget.close()
         except Exception:
@@ -72,7 +69,9 @@ def test_dashboard_upcoming_and_previous_visits(mock_appt, mock_client, mock_ani
     # Sprawdź sekcje wizyt
     # --- Nadchodzące
     up_group = dash._create_upcoming_visits()
-    up_table = up_group.findChild(type(dash), QTableWidgetItem, options=Qt.FindChildrenRecursively)
+    up_table = up_group.findChild(
+        type(dash), QTableWidgetItem, options=Qt.FindChildOption.FindChildrenRecursively
+    )
     assert up_group is not None
     # --- Poprzednie
     prev_group = dash._create_previous_visits()
@@ -86,7 +85,7 @@ def test_dashboard_upcoming_and_previous_visits(mock_appt, mock_client, mock_ani
 @patch("vetclinic_gui.windows.Doctor.dashboard.AppointmentService")
 def test_dashboard_upcoming_and_previous_visits(mock_appt, mock_client, mock_animal, app):
     from vetclinic_gui.windows.Doctor.dashboard import DashboardPage
-    from PyQt5.QtWidgets import QTableWidget
+    from PyQt6.QtWidgets import QTableWidget
     import datetime
 
     # Dummy dane

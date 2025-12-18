@@ -1,7 +1,8 @@
 import sys, os
 import requests
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QMessageBox
+from vetclinic_gui.qt_compat import Qt  # patches QtCore.Qt enum aliases
 from vetclinic_gui.services.auth_service import AuthService
 from vetclinic_gui.windows.auth.setup_totp_dialog import SetupTOTPDialog
 from vetclinic_gui.windows.auth.password_dialogs import ChangePasswordDialog, ResetTOTPDialog
@@ -35,7 +36,7 @@ class LoginWindow(QtWidgets.QWidget):
         
         # Nagłówek z łamaniem linii
         label_title = QtWidgets.QLabel("Cześć!\nWitaj ponownie")
-        font_title = QtGui.QFont("Arial", 22, QtGui.QFont.Bold)
+        font_title = QtGui.QFont("Arial", 22, QtGui.QFont.Weight.Bold)
         label_title.setFont(font_title)
         
         label_subtitle = QtWidgets.QLabel("Witamy w VetClinic!")
@@ -49,12 +50,12 @@ class LoginWindow(QtWidgets.QWidget):
 
         self.password_input = QtWidgets.QLineEdit()
         self.password_input.setPlaceholderText("Hasło")
-        self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.password_input.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
         # Jednorazowe hasło (OTP-mail), domyślnie ukryte
         self.otp_input = QtWidgets.QLineEdit()
         self.otp_input.setPlaceholderText("Jednorazowe hasło")
-        self.otp_input.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.otp_input.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         self.otp_input.setVisible(False)
 
         # TOTP, domyślnie ukryte
@@ -169,7 +170,7 @@ class LoginWindow(QtWidgets.QWidget):
             # 1) Pierwsze logowanie → wymaga zmiany hasła
             if resp.status_code == 202:
                 dlg = ChangePasswordDialog(email, otp or pwd, self)
-                if dlg.exec_() == QtWidgets.QDialog.Accepted:
+                if dlg.exec() == QtWidgets.QDialog.Accepted:
                     # po zmianie hasła ponawiamy logowanie
                     self.password_input.setText(dlg.new_pwd.text())
                     return self.handle_login()
@@ -179,7 +180,7 @@ class LoginWindow(QtWidgets.QWidget):
             elif resp.status_code == 201:
                 uri = resp.json().get("totp_uri")
                 if uri:
-                    SetupTOTPDialog(uri, email, self).exec_()
+                    SetupTOTPDialog(uri, email, self).exec()
                 # pokazujemy pole na kod TOTP
                 self.totp_input.setVisible(True)
                 return
@@ -233,8 +234,8 @@ class LoginWindow(QtWidgets.QWidget):
         if not email:
             return QMessageBox.warning(self, "Błąd", "Podaj email.")
         dlg = ResetTOTPDialog(email, self)
-        if dlg.exec_() == QtWidgets.QDialog.Accepted and dlg.totp_uri:
-            SetupTOTPDialog(dlg.totp_uri, email, self).exec_()
+        if dlg.exec() == QtWidgets.QDialog.Accepted and dlg.totp_uri:
+            SetupTOTPDialog(dlg.totp_uri, email, self).exec()
             self.totp_input.setVisible(True)
             self.reset_totp_btn.setVisible(False)
 
@@ -242,4 +243,4 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     w = LoginWindow()
     w.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

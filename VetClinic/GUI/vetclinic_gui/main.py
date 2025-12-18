@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox
+from PyQt6.QtWidgets import QApplication, QInputDialog, QMessageBox
 from vetclinic_gui.windows.main_window import MainWindow
 from vetclinic_gui.services.clients_service import ClientService
 
@@ -82,7 +82,7 @@ def main():
     # 3) Uruchom główne okno, przekazując user_role, doctor_id i client_id
     window = MainWindow(user_role=user_role, doctor_id=doctor_id, client_id=client_id)
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":

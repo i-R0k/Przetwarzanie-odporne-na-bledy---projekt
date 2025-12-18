@@ -1,9 +1,21 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout, QLineEdit, QLabel,
-    QPushButton, QMessageBox, QFrame, QSizePolicy,
-    QDateEdit, QDoubleSpinBox, QTextEdit, QCompleter, QComboBox
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QFormLayout,
+    QLineEdit,
+    QLabel,
+    QPushButton,
+    QMessageBox,
+    QFrame,
+    QSizePolicy,
+    QDateEdit,
+    QDoubleSpinBox,
+    QTextEdit,
+    QCompleter,
+    QComboBox,
 )
-from PyQt5.QtCore import Qt, QDate, QStringListModel
+from vetclinic_gui.qt_compat import Qt
+from PyQt6.QtCore import QDate, QStringListModel
 from datetime import date
 
 from vetclinic_gui.services.clients_service import ClientService
@@ -32,7 +44,9 @@ class AnimalRegistrationPage(QWidget):
 
         card = QFrame()
         card.setMaximumWidth(600)
-        card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        card.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum
+        )
         card.setStyleSheet("""
             QFrame {
                 background-color: #FFFFFF;
@@ -83,7 +97,7 @@ class AnimalRegistrationPage(QWidget):
         self._owner_completer = QCompleter(self._owner_model, self.owner_le)
         self._owner_completer.setCaseSensitivity(Qt.CaseInsensitive)
         self._owner_completer.setFilterMode(Qt.MatchContains)
-        self._owner_completer.setCompletionMode(QCompleter.PopupCompletion)
+        self._owner_completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self._owner_completer.activated[str].connect(self._on_owner_selected)
         # podpinamy filtr przy każdej edycji tekstu
         self.owner_le.textEdited.connect(self._filter_owners)

@@ -9,10 +9,15 @@ from vetclinic_api.blockchain.core import SQLAlchemyStorage
 
 def _reset_chain_state():
     db = SessionLocal()
-    db.query(TransactionDB).delete()
-    db.query(BlockDB).delete()
-    db.commit()
-    db.close()
+    try:
+        db.query(TransactionDB).delete()
+        db.query(BlockDB).delete()
+        db.commit()
+    finally:
+        db.close()
+
+    # Ensure schema is freshly created to avoid leftover locks/state.
+    SQLAlchemyStorage()
     deps._storage = SQLAlchemyStorage()
 
 

@@ -1,6 +1,4 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QPushButton, QCheckBox
-)
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QCheckBox
 
 class AdminSettingsPage(QWidget):
     """

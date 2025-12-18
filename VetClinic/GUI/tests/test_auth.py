@@ -1,15 +1,11 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMessageBox
 pytestmark = pytest.mark.gui
-
-@pytest.fixture(scope="session")
-def app():
-    return QApplication([])
 
 # ============== ZMIANA HASŁA ==============
 @patch("vetclinic_gui.windows.auth.password_dialogs.requests.post")
-def test_change_password_success(mock_post, app):
+def test_change_password_success(mock_post, qapp):
     from vetclinic_gui.windows.auth.password_dialogs import ChangePasswordDialog
     dialog = ChangePasswordDialog(email="user@test.com", otp_code="123456")
     dialog.new_pwd.setText("haslo123")
@@ -21,7 +17,7 @@ def test_change_password_success(mock_post, app):
         assert infomock.called
 
 @patch("vetclinic_gui.windows.auth.password_dialogs.requests.post")
-def test_change_password_mismatch_or_empty(mock_post, app):
+def test_change_password_mismatch_or_empty(mock_post, qapp):
     from vetclinic_gui.windows.auth.password_dialogs import ChangePasswordDialog
     dialog = ChangePasswordDialog(email="u@a.pl", otp_code="xyz")
     dialog.new_pwd.setText("abc")
@@ -36,7 +32,7 @@ def test_change_password_mismatch_or_empty(mock_post, app):
         assert warnmock2.called
 
 @patch("vetclinic_gui.windows.auth.password_dialogs.requests.post")
-def test_change_password_error_api(mock_post, app):
+def test_change_password_error_api(mock_post, qapp):
     from vetclinic_gui.windows.auth.password_dialogs import ChangePasswordDialog
     dialog = ChangePasswordDialog(email="u@a.pl", otp_code="xyz")
     dialog.new_pwd.setText("haslo123")
@@ -50,7 +46,7 @@ def test_change_password_error_api(mock_post, app):
 # ============= RESET TOTP + ZMIANA HASŁA =============
 
 @patch("vetclinic_gui.windows.auth.password_dialogs.requests.post")
-def test_reset_totp_success(mock_post, app):
+def test_reset_totp_success(mock_post, qapp):
     from vetclinic_gui.windows.auth.password_dialogs import ResetTOTPDialog
     dialog = ResetTOTPDialog(email="u@a.pl")
     dialog.old_pwd.setText("starehaslo")
@@ -64,7 +60,7 @@ def test_reset_totp_success(mock_post, app):
         assert dialog.totp_uri == "otpauth://..."
 
 @patch("vetclinic_gui.windows.auth.password_dialogs.requests.post")
-def test_reset_totp_missing_or_mismatch(mock_post, app):
+def test_reset_totp_missing_or_mismatch(mock_post, qapp):
     from vetclinic_gui.windows.auth.password_dialogs import ResetTOTPDialog
     dialog = ResetTOTPDialog(email="x@a.pl")
     dialog.old_pwd.setText("")
@@ -75,7 +71,7 @@ def test_reset_totp_missing_or_mismatch(mock_post, app):
         assert warnmock.called
 
 @patch("vetclinic_gui.windows.auth.password_dialogs.requests.post")
-def test_reset_totp_error_api(mock_post, app):
+def test_reset_totp_error_api(mock_post, qapp):
     from vetclinic_gui.windows.auth.password_dialogs import ResetTOTPDialog
     dialog = ResetTOTPDialog(email="z@a.pl")
     dialog.old_pwd.setText("xxx")
@@ -90,7 +86,7 @@ def test_reset_totp_error_api(mock_post, app):
 # ============== SETUP TOTP DIALOG ==============
 
 @patch("vetclinic_gui.windows.auth.setup_totp_dialog.requests.post")
-def test_setup_totp_confirm_success(mock_post, app):
+def test_setup_totp_confirm_success(mock_post, qapp):
     from vetclinic_gui.windows.auth.setup_totp_dialog import SetupTOTPDialog
     dialog = SetupTOTPDialog(totp_uri="otpauth://xxx", email="u@b.pl")
     dialog.totp_input.setText("123456")
@@ -100,7 +96,7 @@ def test_setup_totp_confirm_success(mock_post, app):
         assert infomock.called
 
 @patch("vetclinic_gui.windows.auth.setup_totp_dialog.requests.post")
-def test_setup_totp_confirm_empty_and_error(mock_post, app):
+def test_setup_totp_confirm_empty_and_error(mock_post, qapp):
     from vetclinic_gui.windows.auth.setup_totp_dialog import SetupTOTPDialog
     dialog = SetupTOTPDialog(totp_uri="otpauth://xxx", email="u@b.pl")
     dialog.totp_input.setText("")
@@ -116,9 +112,14 @@ def test_setup_totp_confirm_empty_and_error(mock_post, app):
         assert dialog.status_label.text() != ""
 
 # ================== ProportionalImageLabel (opcja) ==================
-def test_proportional_image_label(app):
+def test_proportional_image_label(qapp, qtbot):
     from vetclinic_gui.windows.auth.setup_totp_dialog import ProportionalImageLabel
     label = ProportionalImageLabel()
+    qtbot.addWidget(label)
+    label.resize(200, 200)
+    label.show()
+    qtbot.waitExposed(label)
     # Sprawdź inicjalizację i sizeHint
     size = label.sizeHint()
-    assert size.width() >= 0
+    assert size.width() > 0
+    assert size.height() > 0

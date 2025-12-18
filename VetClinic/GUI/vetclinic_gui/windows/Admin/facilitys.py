@@ -1,9 +1,17 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout,
-    QTableWidget, QTableWidgetItem, QHeaderView,
-    QPushButton, QMessageBox, QLabel, QLineEdit
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QPushButton,
+    QMessageBox,
+    QLabel,
+    QLineEdit,
+    QAbstractItemView,
 )
-from PyQt5.QtCore import Qt
+from vetclinic_gui.qt_compat import Qt
 
 from vetclinic_gui.services.facility_service import FacilityService
 
@@ -44,14 +52,14 @@ class FacilitiesPage(QWidget):
         # pionowy nagłówek ukryty, stała wysokość wiersza
         vh = self.table.verticalHeader()
         vh.setVisible(False)
-        vh.setSectionResizeMode(QHeaderView.Fixed)
+        vh.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         vh.setDefaultSectionSize(48)
 
         # zachowanie tabeli
         self.table.setAlternatingRowColors(True)
         self.table.setShowGrid(True)
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.setSelectionMode(QTableWidget.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 
         # stylizacja tabeli i edytowalnych pól
         self.table.setStyleSheet("""
@@ -81,9 +89,9 @@ class FacilitiesPage(QWidget):
 
         # proporcje kolumn
         hdr = self.table.horizontalHeader()
-        hdr.setSectionResizeMode(1, QHeaderView.Stretch)         # nazwa
-        hdr.setSectionResizeMode(2, QHeaderView.Stretch)         # adres
-        hdr.setSectionResizeMode(3, QHeaderView.ResizeToContents) # telefon
+        hdr.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)          # nazwa
+        hdr.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)          # adres
+        hdr.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents) # telefon
         hdr.setStretchLastSection(False)
 
         layout.addWidget(self.table)

@@ -4,7 +4,8 @@ import json
 from typing import Any, Dict
 
 import requests
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
+from vetclinic_gui.qt_compat import Qt  # ensures PyQt5-style enum aliases
 
 NODES: Dict[int, str] = {
     1: "http://localhost:8001",
@@ -39,7 +40,13 @@ class ClusterAdminWidget(QtWidgets.QWidget):
             ["Node", "URL", "Height", "Last hash", "Valid", "Faults"]
         )
         self.table.setRowCount(len(NODES))
-        self.table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        header = self.table.horizontalHeader()
+        stretch_mode = getattr(
+            QtWidgets.QHeaderView,
+            "Stretch",
+            QtWidgets.QHeaderView.ResizeMode.Stretch,  # PyQt6
+        )
+        header.setSectionResizeMode(stretch_mode)
 
         for row, (node_id, url) in enumerate(NODES.items()):
             self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(str(node_id)))

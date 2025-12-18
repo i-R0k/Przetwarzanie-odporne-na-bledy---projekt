@@ -1,13 +1,25 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from vetclinic_api.cluster.faults import FaultConfig, FAULTS
+from vetclinic_api.admin.network_state import state_payload, update_state
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+FAULT_FIELDS = [
+    "offline",
+    "slow_ms",
+    "byzantine",
+    "flapping",
+    "flapping_mod",
+    "drop_rpc_prob",
+]
+
+
+def _fault_payload() -> dict:
+    data = state_payload()
+    return {field: data[field] for field in FAULT_FIELDS}
 
 
 class FaultsPayload(BaseModel):
@@ -21,14 +33,12 @@ class FaultsPayload(BaseModel):
 
 @router.get("/faults")
 def get_faults() -> dict:
-    return asdict(FAULTS)
+    return _fault_payload()
 
 
 @router.put("/faults")
 def update_faults(payload: FaultsPayload) -> dict:
-    global FAULTS
-    current = asdict(FAULTS)
     updates = payload.model_dump(exclude_unset=True)
-    current.update({k: v for k, v in updates.items() if v is not None})
-    FAULTS = FaultConfig(**current)
-    return asdict(FAULTS)
+    if updates:
+        update_state(**updates)
+    return _fault_payload()

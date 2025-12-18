@@ -1,9 +1,13 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QMainWindow, QWidget,
-    QHBoxLayout, QVBoxLayout,
-    QPushButton, QStackedWidget,
-    QFrame, QLabel
+from vetclinic_gui.qt_compat import Qt
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QPushButton,
+    QStackedWidget,
+    QFrame,
+    QLabel,
 )
 
 from .Admin.settings import AdminSettingsPage

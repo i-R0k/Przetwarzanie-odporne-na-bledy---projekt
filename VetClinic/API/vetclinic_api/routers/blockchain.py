@@ -22,7 +22,7 @@ from vetclinic_api.blockchain.core import (
 from vetclinic_api.blockchain.deps import get_storage
 from vetclinic_api.cluster.config import CONFIG
 from vetclinic_api.cluster.http_client import get_http_client
-from vetclinic_api.cluster.faults import apply_faults_for_rpc
+from vetclinic_api.middleware.chaos import apply_rpc_faults
 from vetclinic_api.crypto.ed25519 import (
     load_leader_keys_from_env,
     sign_message,
@@ -187,27 +187,40 @@ async def verify_chain_endpoint(
     storage: Storage = Depends(get_storage),
 ):
     start = time.perf_counter()
+    response: JSONResponse
     try:
         result = verify_chain(storage)
         ok = bool(result.get("valid"))
         chain_verify_total.labels(NODE_NAME, "ok" if ok else "invalid").inc()
-        return result
-    except Exception:
+        if not ok and "reason" not in result:
+            errors = result.get("errors") or []
+            result["reason"] = errors[0].get("reason", "invalid_chain") if errors else "invalid_chain"
+        response = JSONResponse(result, status_code=200)
+    except Exception as exc:
         chain_verify_total.labels(NODE_NAME, "error").inc()
-        raise
+        response = JSONResponse(
+            {
+                "valid": False,
+                "reason": "internal_error",
+                "detail": str(exc),
+            },
+            status_code=200,
+        )
     finally:
         elapsed = time.perf_counter() - start
         chain_verify_duration_seconds.labels(NODE_NAME).observe(elapsed)
+    return response
 
 
 @router.post("/chain/mine_distributed")
 async def mine_distributed(
     storage: Storage = Depends(get_storage),
     client: httpx.AsyncClient = Depends(get_http_client),
-    _faults: None = Depends(apply_faults_for_rpc),
 ):
     if CONFIG.node_id != CONFIG.leader_id:
         raise HTTPException(status_code=400, detail="Not a leader")
+
+    await apply_rpc_faults("mine_distributed")
 
     try:
         proposal = build_block_proposal(storage)

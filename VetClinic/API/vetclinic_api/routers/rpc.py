@@ -5,10 +5,9 @@ from typing import List
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 
+from vetclinic_api.admin.network_state import get_state
 from vetclinic_api.cluster.config import CONFIG
 from vetclinic_api.cluster.http_client import get_http_client
-from vetclinic_api.cluster import faults as faults_config
-from vetclinic_api.cluster.faults import apply_faults_for_rpc
 from vetclinic_api.blockchain.core import (
     BlockProposal,
     Storage,
@@ -21,15 +20,17 @@ from vetclinic_api.crypto.ed25519 import (
     load_leader_keys_from_env,
     verify_signature,
 )
+from vetclinic_api.middleware.chaos import apply_rpc_faults
 
 router = APIRouter(prefix="/rpc", tags=["rpc"])
 
 
 @router.get("/node-info")
-async def node_info(_faults: None = Depends(apply_faults_for_rpc)):
+async def node_info():
     """
     Zwraca podstawowe informacje o tym węźle.
     """
+    await apply_rpc_faults("node_info")
     return {
         "node_id": CONFIG.node_id,
         "leader_id": CONFIG.leader_id,
@@ -38,23 +39,23 @@ async def node_info(_faults: None = Depends(apply_faults_for_rpc)):
 
 
 @router.get("/leader-info")
-async def leader_info(_faults: None = Depends(apply_faults_for_rpc)):
+async def leader_info():
     """
-    Zwraca identyfikator lidera znany temu węzłowi.
-    Na Dzień 4: wszędzie ta sama wartość, z konfiguracji.
+    Zwraca identyfikator lidera znany temu węźle.
     """
+    await apply_rpc_faults("leader_info")
     return {"leader_id": CONFIG.leader_id}
 
 
 @router.get("/ping-peers")
 async def ping_peers(
     client: httpx.AsyncClient = Depends(get_http_client),
-    _faults: None = Depends(apply_faults_for_rpc),
 ):
     """
     Testowo odpytuje wszystkich peers o /rpc/node-info.
     Nie jest to mechanizm konsensusu, tylko diagnostyka sieci.
     """
+    await apply_rpc_faults("ping_peers")
     results: List[dict] = []
     for base_url in CONFIG.peers:
         url = f"{base_url.rstrip('/')}/rpc/node-info"
@@ -88,8 +89,12 @@ async def ping_peers(
 async def propose_block(
     proposal: BlockProposal,
     storage: Storage = Depends(get_storage),
-    _faults: None = Depends(apply_faults_for_rpc),
 ):
+    """
+    Waliduje i głosuje nad propozycją bloku.
+    """
+    await apply_rpc_faults("propose_block")
+
     chain = storage.get_chain()
     if not chain:
         raise HTTPException(status_code=500, detail="Empty chain on follower")
@@ -107,20 +112,24 @@ async def propose_block(
     if not verify_signature(keys.pub, header_bytes, proposal.block.leader_sig):
         is_ok = False
 
-    if faults_config.FAULTS.byzantine:
-        if is_ok:
-            return {"vote": "reject", "byzantine": True}
-        return {"vote": "accept", "byzantine": True}
+    state = get_state()
+    vote = "accept" if is_ok else "reject"
+    if state.byzantine:
+        vote = "reject" if is_ok else "accept"
 
-    return {"vote": "accept" if is_ok else "reject", "byzantine": False}
+    return {"vote": vote, "byzantine": state.byzantine}
 
 
 @router.post("/commit_block")
 async def commit_block(
     proposal: BlockProposal,
     storage: Storage = Depends(get_storage),
-    _faults: None = Depends(apply_faults_for_rpc),
 ):
+    """
+    Przyjmuje zatwierdzony blok i dodaje do łańcucha.
+    """
+    await apply_rpc_faults("commit_block")
+
     chain = storage.get_chain()
     if not chain:
         raise HTTPException(status_code=500, detail="Empty chain on commit")
@@ -134,8 +143,13 @@ async def commit_block(
     if not verify_signature(keys.pub, header_bytes, proposal.block.leader_sig):
         raise HTTPException(status_code=400, detail="Invalid leader signature")
 
-    if faults_config.FAULTS.byzantine:
-        return {"status": "committed", "byzantine": True}
+    state = get_state()
+    if state.byzantine:
+        return {"status": "committed", "byzantine": True, "height": last.index}
 
     storage.add_block(proposal.block)
-    return {"status": "committed", "byzantine": False}
+    return {
+        "status": "committed",
+        "byzantine": False,
+        "height": proposal.block.index,
+    }

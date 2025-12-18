@@ -1,71 +1,54 @@
-import hashlib
-import json
+from __future__ import annotations
+
 from datetime import datetime
 from decimal import Decimal
 
 from vetclinic_api.blockchain.core import (
-    InMemoryStorage,
+    Block,
     Transaction,
     TxPayload,
     compute_block_hash,
-    mine_block,
+    compute_merkle_root,
 )
 
 
-def test_genesis_block_exists():
-    storage = InMemoryStorage()
-    chain = storage.get_chain()
-
-    assert len(chain) == 1
-    genesis = chain[0]
-    assert genesis.index == 0
-    assert genesis.previous_hash == "0" * 64
-    assert len(genesis.transactions) == 0
-
-    block_hash = compute_block_hash(genesis)
-    assert isinstance(block_hash, str)
-    assert len(block_hash) == 64
-
-def _make_transaction(sender: str, recipient: str, amount: float) -> Transaction:
+def _make_tx(idx: int) -> Transaction:
     payload = TxPayload(
-        sender=sender,
-        recipient=recipient,
-        amount=Decimal(str(amount)),
+        sender=f"user{idx}",
+        recipient=f"dest{idx}",
+        amount=Decimal("1.0"),
     )
-    timestamp = datetime.utcnow()
-    raw = json.dumps(
-        {
-            "payload": payload.model_dump(mode="json"),
-            "timestamp": timestamp.isoformat(),
-        },
-        sort_keys=True,
-    ).encode("utf-8")
-    tx_id = hashlib.sha256(raw).hexdigest()
     return Transaction(
-        id=tx_id,
+        id=f"tx{idx}",
         payload=payload,
-        sender_pub="test-sender-pub",
-        signature="test-signature",
-        timestamp=timestamp,
+        sender_pub="pub",
+        signature=f"sig{idx}",
+        timestamp=datetime.utcnow(),
     )
 
 
-def test_mine_block_moves_txs_from_mempool_to_chain():
-    storage = InMemoryStorage()
+def test_compute_merkle_root_changes_with_transactions():
+    txs = [_make_tx(1), _make_tx(2)]
+    root1 = compute_merkle_root(txs)
+    txs_modified = [_make_tx(1), _make_tx(3)]
+    root2 = compute_merkle_root(txs_modified)
+    assert root1 != root2
 
-    storage.add_transaction(_make_transaction("a", "b", 1.0))
-    storage.add_transaction(_make_transaction("c", "d", 2.0))
 
-    old_chain = storage.get_chain()
-    old_height = len(old_chain) - 1
+def test_compute_block_hash_depends_on_header_only():
+    txs = [_make_tx(1)]
+    block = Block(
+        index=1,
+        previous_hash="0" * 64,
+        timestamp=datetime.utcnow(),
+        transactions=txs,
+        nonce=5,
+        merkle_root=compute_merkle_root(txs),
+        leader_sig="",
+    )
+    hash1 = compute_block_hash(block)
+    hash2 = compute_block_hash(block)
+    assert hash1 == hash2
 
-    block = mine_block(storage)
-
-    new_chain = storage.get_chain()
-    assert len(new_chain) == old_height + 2  # genesis + nowy blok
-    assert new_chain[-1].index == old_chain[-1].index + 1
-
-    assert storage.get_mempool() == []
-
-    block_hash = compute_block_hash(block)
-    assert block_hash.startswith("0000")
+    block_modified = block.model_copy(update={"nonce": block.nonce + 1})
+    assert compute_block_hash(block_modified) != hash1
