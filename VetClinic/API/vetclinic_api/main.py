@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 import uvicorn
 
+from vetclinic_api.admin.network_router import router as admin_network_router
 from vetclinic_api.metrics import metrics_router, instrumentator_middleware
+from vetclinic_api.middleware.chaos import ChaosMiddleware
 from vetclinic_api.routers import (
     users,
     doctors,
@@ -51,9 +53,11 @@ app.include_router(payments.router)
 app.include_router(rpc.router)
 app.include_router(cluster.router)
 app.include_router(admin.router)
+app.include_router(admin_network_router)
  
 
 app.middleware("http")(instrumentator_middleware)
+app.add_middleware(ChaosMiddleware)
 
 # Tworzenie tabel w bazie danych (jeśli nie istnieją)
 Base.metadata.create_all(bind=engine)

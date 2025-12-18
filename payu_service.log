@@ -449,3 +449,413 @@
 2025-11-20 18:50:23,803 DEBUG      STATUS: 200
 2025-11-20 18:50:23,803 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
 2025-11-20 18:50:23,803 DEBUG      TEXT:   fail…
+2025-12-13 18:02:29,526 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:02:29,526 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:02:29,526 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:02:29,526 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:02:29,527 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:02:29,527 DEBUG      STATUS: 200
+2025-12-13 18:02:29,527 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:02:29,527 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-13 18:02:29,529 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:02:29,529 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:02:29,529 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:02:29,529 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:02:29,530 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:02:29,530 DEBUG      STATUS: 200
+2025-12-13 18:02:29,530 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:02:29,530 DEBUG      TEXT:   fail…
+2025-12-13 18:02:29,532 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:02:29,532 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:02:29,532 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:02:29,532 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645349', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:02:29,532 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:02:29,532 DEBUG      STATUS: 200
+2025-12-13 18:02:29,532 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:02:29,532 DEBUG      TEXT:   {"res":1}…
+2025-12-13 18:02:29,536 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:02:29,536 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:02:29,536 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:02:29,536 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645349', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:02:29,536 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:02:29,536 DEBUG      STATUS: 302
+2025-12-13 18:02:29,538 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-13 18:02:29,538 DEBUG      TEXT:   …
+2025-12-13 18:02:29,538 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-13 18:02:29,541 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:02:29,543 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:02:29,543 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:02:29,543 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1765645349', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-13 18:02:29,543 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:02:29,543 DEBUG      STATUS: 200
+2025-12-13 18:02:29,543 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:02:29,543 DEBUG      TEXT:   fail…
+2025-12-13 18:06:48,284 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:06:48,285 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:06:48,285 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:06:48,285 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:06:48,285 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:06:48,285 DEBUG      STATUS: 200
+2025-12-13 18:06:48,285 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:06:48,285 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-13 18:06:48,289 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:06:48,289 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:06:48,289 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:06:48,290 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:06:48,290 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:06:48,290 DEBUG      STATUS: 200
+2025-12-13 18:06:48,290 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:06:48,290 DEBUG      TEXT:   fail…
+2025-12-13 18:06:48,293 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:06:48,293 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:06:48,293 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:06:48,293 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645608', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:06:48,293 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:06:48,293 DEBUG      STATUS: 200
+2025-12-13 18:06:48,293 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:06:48,293 DEBUG      TEXT:   {"res":1}…
+2025-12-13 18:06:48,296 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:06:48,296 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:06:48,296 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:06:48,296 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645608', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:06:48,298 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:06:48,298 DEBUG      STATUS: 302
+2025-12-13 18:06:48,298 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-13 18:06:48,298 DEBUG      TEXT:   …
+2025-12-13 18:06:48,298 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-13 18:06:48,300 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:06:48,301 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:06:48,301 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:06:48,301 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1765645608', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-13 18:06:48,301 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:06:48,301 DEBUG      STATUS: 200
+2025-12-13 18:06:48,301 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:06:48,301 DEBUG      TEXT:   fail…
+2025-12-13 18:11:01,347 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:11:01,348 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:11:01,348 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:11:01,348 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:11:01,348 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:11:01,348 DEBUG      STATUS: 200
+2025-12-13 18:11:01,348 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:11:01,348 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-13 18:11:01,354 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:11:01,354 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:11:01,355 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:11:01,355 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:11:01,355 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:11:01,355 DEBUG      STATUS: 200
+2025-12-13 18:11:01,355 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:11:01,355 DEBUG      TEXT:   fail…
+2025-12-13 18:11:01,358 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:11:01,358 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:11:01,358 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:11:01,358 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645861', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:11:01,358 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:11:01,358 DEBUG      STATUS: 200
+2025-12-13 18:11:01,358 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:11:01,358 DEBUG      TEXT:   {"res":1}…
+2025-12-13 18:11:01,361 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:11:01,361 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:11:01,361 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:11:01,361 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645861', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:11:01,361 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:11:01,361 DEBUG      STATUS: 302
+2025-12-13 18:11:01,361 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-13 18:11:01,361 DEBUG      TEXT:   …
+2025-12-13 18:11:01,361 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-13 18:11:01,364 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:11:01,364 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:11:01,364 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:11:01,364 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1765645861', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-13 18:11:01,364 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:11:01,364 DEBUG      STATUS: 200
+2025-12-13 18:11:01,364 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:11:01,365 DEBUG      TEXT:   fail…
+2025-12-13 18:12:45,293 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:12:45,293 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:12:45,293 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:12:45,293 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:12:45,293 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:12:45,293 DEBUG      STATUS: 200
+2025-12-13 18:12:45,293 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:12:45,293 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-13 18:12:45,297 DEBUG    → PAYU AUTH REQUEST
+2025-12-13 18:12:45,297 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-13 18:12:45,297 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-13 18:12:45,297 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-13 18:12:45,297 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-13 18:12:45,297 DEBUG      STATUS: 200
+2025-12-13 18:12:45,297 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:12:45,298 DEBUG      TEXT:   fail…
+2025-12-13 18:12:45,302 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:12:45,302 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:12:45,302 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:12:45,302 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645965', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:12:45,302 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:12:45,302 DEBUG      STATUS: 200
+2025-12-13 18:12:45,302 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-13 18:12:45,302 DEBUG      TEXT:   {"res":1}…
+2025-12-13 18:12:45,305 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:12:45,305 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:12:45,305 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:12:45,305 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1765645965', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-13 18:12:45,306 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:12:45,306 DEBUG      STATUS: 302
+2025-12-13 18:12:45,306 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-13 18:12:45,306 DEBUG      TEXT:   …
+2025-12-13 18:12:45,306 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-13 18:12:45,309 DEBUG    → PAYU ORDER REQUEST
+2025-12-13 18:12:45,309 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-13 18:12:45,309 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-13 18:12:45,309 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1765645965', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-13 18:12:45,309 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-13 18:12:45,310 DEBUG      STATUS: 200
+2025-12-13 18:12:45,310 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-13 18:12:45,310 DEBUG      TEXT:   fail…
+2025-12-18 09:21:57,250 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:21:57,251 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:21:57,251 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:21:57,251 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:21:57,251 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:21:57,251 DEBUG      STATUS: 200
+2025-12-18 09:21:57,251 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:21:57,251 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-18 09:21:57,254 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:21:57,254 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:21:57,254 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:21:57,254 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:21:57,255 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:21:57,255 DEBUG      STATUS: 200
+2025-12-18 09:21:57,255 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:21:57,255 DEBUG      TEXT:   fail…
+2025-12-18 09:21:57,257 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:21:57,257 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:21:57,257 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:21:57,257 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766046117', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:21:57,257 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:21:57,257 DEBUG      STATUS: 200
+2025-12-18 09:21:57,257 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:21:57,257 DEBUG      TEXT:   {"res":1}…
+2025-12-18 09:21:57,259 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:21:57,259 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:21:57,259 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:21:57,259 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766046117', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:21:57,259 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:21:57,259 DEBUG      STATUS: 302
+2025-12-18 09:21:57,259 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-18 09:21:57,261 DEBUG      TEXT:   …
+2025-12-18 09:21:57,261 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-18 09:21:57,267 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:21:57,267 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:21:57,267 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:21:57,267 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1766046117', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-18 09:21:57,267 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:21:57,267 DEBUG      STATUS: 200
+2025-12-18 09:21:57,267 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:21:57,267 DEBUG      TEXT:   fail…
+2025-12-18 09:25:09,672 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:25:09,673 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:25:09,673 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:25:09,673 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:25:09,673 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:25:09,673 DEBUG      STATUS: 200
+2025-12-18 09:25:09,673 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:25:09,673 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-18 09:25:09,675 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:25:09,675 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:25:09,677 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:25:09,677 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:25:09,677 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:25:09,677 DEBUG      STATUS: 200
+2025-12-18 09:25:09,677 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:25:09,677 DEBUG      TEXT:   fail…
+2025-12-18 09:25:09,678 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:25:09,678 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:25:09,678 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:25:09,678 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766046309', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:25:09,678 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:25:09,678 DEBUG      STATUS: 200
+2025-12-18 09:25:09,678 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:25:09,678 DEBUG      TEXT:   {"res":1}…
+2025-12-18 09:25:09,681 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:25:09,682 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:25:09,682 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:25:09,682 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766046309', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:25:09,682 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:25:09,682 DEBUG      STATUS: 302
+2025-12-18 09:25:09,682 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-18 09:25:09,682 DEBUG      TEXT:   …
+2025-12-18 09:25:09,682 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-18 09:25:09,684 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:25:09,685 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:25:09,685 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:25:09,685 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1766046309', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-18 09:25:09,685 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:25:09,685 DEBUG      STATUS: 200
+2025-12-18 09:25:09,685 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:25:09,685 DEBUG      TEXT:   fail…
+2025-12-18 09:26:09,805 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:26:09,805 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:26:09,805 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:26:09,805 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:26:09,805 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:26:09,805 DEBUG      STATUS: 200
+2025-12-18 09:26:09,805 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:26:09,805 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-18 09:26:09,805 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:26:09,805 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:26:09,805 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:26:09,805 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:26:09,805 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:26:09,805 DEBUG      STATUS: 200
+2025-12-18 09:26:09,805 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:26:09,805 DEBUG      TEXT:   fail…
+2025-12-18 09:26:09,805 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:26:09,805 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:26:09,805 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:26:09,805 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766046369', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:26:09,805 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:26:09,805 DEBUG      STATUS: 200
+2025-12-18 09:26:09,805 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:26:09,805 DEBUG      TEXT:   {"res":1}…
+2025-12-18 09:26:09,811 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:26:09,811 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:26:09,811 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:26:09,811 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766046369', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:26:09,811 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:26:09,811 DEBUG      STATUS: 302
+2025-12-18 09:26:09,811 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-18 09:26:09,811 DEBUG      TEXT:   …
+2025-12-18 09:26:09,811 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-18 09:26:09,811 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:26:09,811 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:26:09,811 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:26:09,811 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1766046369', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-18 09:26:09,811 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:26:09,811 DEBUG      STATUS: 200
+2025-12-18 09:26:09,811 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:26:09,811 DEBUG      TEXT:   fail…
+2025-12-18 09:37:30,017 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:37:30,017 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:37:30,017 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:37:30,018 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:37:30,018 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:37:30,018 DEBUG      STATUS: 200
+2025-12-18 09:37:30,018 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:37:30,018 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-18 09:37:30,022 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:37:30,022 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:37:30,022 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:37:30,022 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:37:30,022 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:37:30,022 DEBUG      STATUS: 200
+2025-12-18 09:37:30,022 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:37:30,022 DEBUG      TEXT:   fail…
+2025-12-18 09:37:30,025 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:37:30,025 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:37:30,025 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:37:30,025 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766047050', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:37:30,025 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:37:30,025 DEBUG      STATUS: 200
+2025-12-18 09:37:30,025 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:37:30,025 DEBUG      TEXT:   {"res":1}…
+2025-12-18 09:37:30,027 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:37:30,027 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:37:30,027 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:37:30,027 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766047050', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:37:30,027 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:37:30,027 DEBUG      STATUS: 302
+2025-12-18 09:37:30,027 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-18 09:37:30,027 DEBUG      TEXT:   …
+2025-12-18 09:37:30,027 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-18 09:37:30,031 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:37:30,031 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:37:30,031 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:37:30,031 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1766047050', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-18 09:37:30,031 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:37:30,031 DEBUG      STATUS: 200
+2025-12-18 09:37:30,031 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:37:30,031 DEBUG      TEXT:   fail…
+2025-12-18 09:38:57,018 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:38:57,019 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:38:57,019 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:38:57,019 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:38:57,019 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:38:57,019 DEBUG      STATUS: 200
+2025-12-18 09:38:57,019 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:38:57,019 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-18 09:38:57,023 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:38:57,023 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:38:57,023 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:38:57,023 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:38:57,023 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:38:57,023 DEBUG      STATUS: 200
+2025-12-18 09:38:57,023 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:38:57,023 DEBUG      TEXT:   fail…
+2025-12-18 09:38:57,027 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:38:57,027 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:38:57,027 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:38:57,027 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766047137', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:38:57,027 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:38:57,027 DEBUG      STATUS: 200
+2025-12-18 09:38:57,027 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:38:57,027 DEBUG      TEXT:   {"res":1}…
+2025-12-18 09:38:57,030 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:38:57,030 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:38:57,030 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:38:57,030 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766047137', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:38:57,030 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:38:57,030 DEBUG      STATUS: 302
+2025-12-18 09:38:57,030 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-18 09:38:57,030 DEBUG      TEXT:   …
+2025-12-18 09:38:57,030 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-18 09:38:57,032 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:38:57,032 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:38:57,032 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:38:57,032 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1766047137', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-18 09:38:57,033 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:38:57,033 DEBUG      STATUS: 200
+2025-12-18 09:38:57,033 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:38:57,033 DEBUG      TEXT:   fail…
+2025-12-18 09:40:08,011 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:40:08,011 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:40:08,011 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:40:08,011 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:40:08,011 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:40:08,011 DEBUG      STATUS: 200
+2025-12-18 09:40:08,011 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:40:08,011 DEBUG      TEXT:   {"access_token":"tok"}…
+2025-12-18 09:40:08,017 DEBUG    → PAYU AUTH REQUEST
+2025-12-18 09:40:08,017 DEBUG      URL:    'https://secure.snd.payu.com/pl/standard/user/oauth/authorize'
+2025-12-18 09:40:08,018 DEBUG      HEADERS:{'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+2025-12-18 09:40:08,018 DEBUG      BODY:   {'grant_type': 'client_credentials'}
+2025-12-18 09:40:08,018 DEBUG    ← PAYU AUTH RESPONSE
+2025-12-18 09:40:08,018 DEBUG      STATUS: 200
+2025-12-18 09:40:08,018 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:40:08,018 DEBUG      TEXT:   fail…
+2025-12-18 09:40:08,021 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:40:08,021 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:40:08,021 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:40:08,021 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766047208', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:40:08,021 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:40:08,021 DEBUG      STATUS: 200
+2025-12-18 09:40:08,021 DEBUG      HEADERS:{'Content-Type': 'application/json'}
+2025-12-18 09:40:08,021 DEBUG      TEXT:   {"res":1}…
+2025-12-18 09:40:08,024 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:40:08,024 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:40:08,024 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:40:08,024 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '9990', 'extOrderId': '1_1766047208', 'buyer': {'email': 'b@x', 'firstName': 'John', 'lastName': 'Doe'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '9990', 'quantity': '1'}]}
+2025-12-18 09:40:08,024 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:40:08,024 DEBUG      STATUS: 302
+2025-12-18 09:40:08,024 DEBUG      HEADERS:{'Content-Type': 'application/json', 'Location': 'https://payu/redirect?orderId=123'}
+2025-12-18 09:40:08,024 DEBUG      TEXT:   …
+2025-12-18 09:40:08,024 INFO     PayU zwrócił URL do płatności: https://payu/redirect?orderId=123
+2025-12-18 09:40:08,027 DEBUG    → PAYU ORDER REQUEST
+2025-12-18 09:40:08,027 DEBUG      URL:    'https://secure.snd.payu.com/api/v2_1/orders'
+2025-12-18 09:40:08,027 DEBUG      HEADERS:{'Authorization': 'Bearer tok', 'Content-Type': 'application/json', 'Accept': 'application/json'}
+2025-12-18 09:40:08,027 DEBUG      BODY:   {'notifyUrl': 'http://localhost:8000/payments/payu/notification', 'customerIp': '127.0.0.1', 'merchantPosId': '300746', 'description': 'Invoice #1', 'currencyCode': 'PLN', 'totalAmount': '100', 'extOrderId': '1_1766047208', 'buyer': {'email': 'b@x', 'firstName': 'Jan', 'lastName': 'Nowak'}, 'products': [{'name': 'Invoice #1', 'unitPrice': '100', 'quantity': '1'}]}
+2025-12-18 09:40:08,027 DEBUG    ← PAYU ORDER RESPONSE
+2025-12-18 09:40:08,027 DEBUG      STATUS: 200
+2025-12-18 09:40:08,027 DEBUG      HEADERS:{'Content-Type': 'text/plain'}
+2025-12-18 09:40:08,027 DEBUG      TEXT:   fail…

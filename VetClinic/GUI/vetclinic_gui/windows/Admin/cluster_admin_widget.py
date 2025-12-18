@@ -22,11 +22,13 @@ class ClusterAdminWidget(QtWidgets.QWidget):
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
+        self._network_state: Dict[str, Any] = {}
         self._timer = QtCore.QTimer(self)
         self._timer.setInterval(3000)
         self._build_ui()
         self._connect_signals()
         self.refresh_cluster()
+        self._load_network_state()
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -121,6 +123,15 @@ class ClusterAdminWidget(QtWidgets.QWidget):
 
         layout.addWidget(faults_group)
 
+        traffic_group = QtWidgets.QGroupBox("Symulator ruchu (trafficgen / admin/network)")
+        tg_layout = QtWidgets.QHBoxLayout(traffic_group)
+        self.chk_traffic = QtWidgets.QCheckBox("Ruch włączony")
+        self.btn_refresh_traffic = QtWidgets.QPushButton("Odśwież stan")
+        tg_layout.addWidget(self.chk_traffic)
+        tg_layout.addStretch(1)
+        tg_layout.addWidget(self.btn_refresh_traffic)
+        layout.addWidget(traffic_group)
+
         details_group = QtWidgets.QGroupBox("Szczegóły węzła (status + verify)")
         dg_layout = QtWidgets.QVBoxLayout(details_group)
         self.text_details = QtWidgets.QTextEdit()
@@ -140,6 +151,8 @@ class ClusterAdminWidget(QtWidgets.QWidget):
         self.spin_auto_interval.valueChanged.connect(self._change_auto_interval)
         self._timer.timeout.connect(self.refresh_cluster)
         self.table.itemSelectionChanged.connect(self._load_selected_node_details)
+        self.chk_traffic.toggled.connect(self._toggle_traffic)
+        self.btn_refresh_traffic.clicked.connect(self._load_network_state)
 
     def _show_error(self, msg: str) -> None:
         QtWidgets.QMessageBox.critical(self, "Błąd", msg)
@@ -347,3 +360,37 @@ class ClusterAdminWidget(QtWidgets.QWidget):
             )
         except Exception as exc:
             self.text_details.setPlainText(f"Error loading node details: {exc}")
+
+    def _load_network_state(self) -> None:
+        base_url = self._get_node_base_url(LEADER_ID)
+        url = f"{base_url}/admin/network/sim"
+        try:
+            resp = requests.get(url, timeout=3.0)
+            resp.raise_for_status()
+            self._network_state = resp.json()
+            self.chk_traffic.blockSignals(True)
+            self.chk_traffic.setChecked(bool(self._network_state.get("traffic_enabled", True)))
+            self.chk_traffic.blockSignals(False)
+        except Exception as exc:
+            self._show_error(f"/admin/network/sim GET error: {exc}")
+
+    def _toggle_traffic(self, enabled: bool) -> None:
+        base_url = self._get_node_base_url(LEADER_ID)
+        url = f"{base_url}/admin/network/sim"
+        state = dict(self._network_state) if self._network_state else {}
+        state.setdefault("traffic_rps", 1.0)
+        state.setdefault("chaos_enabled", False)
+        state.setdefault("chaos_error_rate", 0.02)
+        state.setdefault("chaos_delay_rate", 0.05)
+        state.setdefault("chaos_delay_ms_min", 50)
+        state.setdefault("chaos_delay_ms_max", 300)
+        state["traffic_enabled"] = enabled
+        try:
+            resp = requests.put(url, json=state, timeout=5.0)
+            resp.raise_for_status()
+            self._network_state = resp.json()
+        except Exception as exc:
+            self.chk_traffic.blockSignals(True)
+            self.chk_traffic.setChecked(not enabled)
+            self.chk_traffic.blockSignals(False)
+            self._show_error(f"/admin/network/sim PUT error: {exc}")
