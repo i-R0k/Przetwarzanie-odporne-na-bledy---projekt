@@ -1,14 +1,25 @@
 from datetime import datetime
 import webbrowser
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
-    QHeaderView, QFrame, QLabel, QSizePolicy,
-    QPushButton, QDialog, QHBoxLayout, QSpacerItem,
-    QToolTip, QGraphicsDropShadowEffect
+from vetclinic_gui.qt_compat import Qt
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QFrame,
+    QLabel,
+    QSizePolicy,
+    QPushButton,
+    QDialog,
+    QHBoxLayout,
+    QSpacerItem,
+    QToolTip,
+    QGraphicsDropShadowEffect,
+    QAbstractItemView,
 )
-from PyQt5.QtGui import QBrush, QColor, QFont
+from PyQt6.QtGui import QBrush, QColor, QFont
 
 from vetclinic_gui.services.invoice_service import InvoiceService
 from vetclinic_gui.services.payment_service import PaymentService
@@ -42,7 +53,7 @@ class PaymentDialog(QDialog):
         layout.setSpacing(12)
 
         lbl = QLabel("Wybierz metodę płatności:")
-        lbl.setFont(QFont("Segoe UI", 11, QFont.Bold))
+        lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         layout.addWidget(lbl)
 
         btn_layout = QHBoxLayout()
@@ -60,7 +71,14 @@ class PaymentDialog(QDialog):
 
         btn_layout.addWidget(btn_stripe)
         btn_layout.addWidget(btn_payu)
-        btn_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        btn_layout.addSpacerItem(
+            QSpacerItem(
+                20,
+                20,
+                QSizePolicy.Policy.Expanding,
+                QSizePolicy.Policy.Minimum,
+            )
+        )
         layout.addLayout(btn_layout)
 
     def _pay_stripe(self):
@@ -116,13 +134,15 @@ class InvoicesWindow(QWidget):
 
         # Header inside card
         header = QLabel("Lista faktur")
-        header.setFont(QFont("Segoe UI", 16, QFont.Bold))
+        header.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         header.setStyleSheet("color: #333;")
         card_layout.addWidget(header)
 
         # Table
         self.table = QTableWidget(0, 5)
-        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.table.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self.table.setAlternatingRowColors(True)
         self.table.setStyleSheet(
             "QTableWidget { background-color: white; border: none; }"
@@ -135,17 +155,17 @@ class InvoicesWindow(QWidget):
 
         hdr = self.table.horizontalHeader()
         # ID kolumna dopasowana do zawartości, pozostałe równo rozciągnięte
-        hdr.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         for col in range(1, self.table.columnCount()):
-            hdr.setSectionResizeMode(col, QHeaderView.Stretch)
+            hdr.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
 
         # **Nowość**: wyższe wiersze
         vh = self.table.verticalHeader()
         vh.setDefaultSectionSize(50)
         vh.setVisible(False)
 
-        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         card_layout.addWidget(self.table)
 
         # Empty state inside card
@@ -226,6 +246,6 @@ class InvoicesWindow(QWidget):
                 "QPushButton:hover { background-color: #2e8ac7; }"
             )
             pay_btn.clicked.connect(
-                lambda _, iid=inv.id: PaymentDialog(self, iid, self.client_id).exec_()
+                lambda _, iid=inv.id: PaymentDialog(self, iid, self.client_id).exec()
             )
             self.table.setCellWidget(row, 4, pay_btn)

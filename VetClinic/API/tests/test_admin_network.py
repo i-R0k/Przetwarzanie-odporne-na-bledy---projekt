@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from vetclinic_api.admin.network_state import STATE, NetworkSimState
+from vetclinic_api.admin.network_state import NetworkSimState, STATE, update_state
 from vetclinic_api.main import app
 
 
 def _reset_state() -> None:
     defaults = NetworkSimState()
-    STATE.traffic_enabled = defaults.traffic_enabled
-    STATE.traffic_rps = defaults.traffic_rps
-    STATE.chaos_enabled = defaults.chaos_enabled
-    STATE.chaos_error_rate = defaults.chaos_error_rate
-    STATE.chaos_delay_rate = defaults.chaos_delay_rate
-    STATE.chaos_delay_ms_min = defaults.chaos_delay_ms_min
-    STATE.chaos_delay_ms_max = defaults.chaos_delay_ms_max
+    payload = {
+        key: value
+        for key, value in defaults.__dict__.items()
+        if not key.startswith("_")
+    }
+    payload["drop_rpc_probability"] = defaults.drop_rpc_probability
+    update_state(**payload)
 
 
 def test_get_sim_state_returns_defaults():

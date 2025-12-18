@@ -1,13 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from PyQt5.QtWidgets import QApplication, QMessageBox, QTableWidgetItem
+from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 pytestmark = pytest.mark.gui
-
-# ==================== FIXTURES ====================
-
-@pytest.fixture(scope="session")
-def app():
-    return QApplication([])
 
 # ==================== CLIENTS ====================
 

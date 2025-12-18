@@ -1,8 +1,15 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout, QLineEdit, QLabel,
-    QPushButton, QMessageBox, QFrame, QSizePolicy
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QFormLayout,
+    QLineEdit,
+    QLabel,
+    QPushButton,
+    QMessageBox,
+    QFrame,
+    QSizePolicy,
 )
-from PyQt5.QtCore import Qt
+from vetclinic_gui.qt_compat import Qt
 import json
 from vetclinic_gui.services.doctors_service import DoctorService
 
@@ -23,7 +30,9 @@ class DoctorRegistrationPage(QWidget):
         # karta
         card = QFrame()
         card.setMaximumWidth(600)
-        card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        card.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum
+        )
         card.setStyleSheet("""
             QFrame {
                 background-color: #FFFFFF;

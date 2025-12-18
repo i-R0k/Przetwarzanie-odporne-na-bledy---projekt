@@ -1,9 +1,18 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout,
-    QTableWidget, QTableWidgetItem, QHeaderView,
-    QPushButton, QMessageBox, QLabel, QLineEdit, QComboBox
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QPushButton,
+    QMessageBox,
+    QLabel,
+    QLineEdit,
+    QComboBox,
+    QAbstractItemView,
 )
-from PyQt5.QtCore import Qt
+from vetclinic_gui.qt_compat import Qt
 import webbrowser
 
 from vetclinic_gui.services.doctors_service import DoctorService
@@ -45,13 +54,13 @@ class DoctorsPage(QWidget):
         self.table.hideColumn(0)
         vh = self.table.verticalHeader()
         vh.setVisible(False)
-        vh.setSectionResizeMode(QHeaderView.Fixed)
+        vh.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         vh.setDefaultSectionSize(48)
 
         self.table.setAlternatingRowColors(True)
         self.table.setShowGrid(True)
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.setSelectionMode(QTableWidget.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 
         # Styl tabeli
         self.table.setStyleSheet("""
@@ -80,12 +89,12 @@ class DoctorsPage(QWidget):
         """)
 
         hdr = self.table.horizontalHeader()
-        hdr.setSectionResizeMode(1, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(2, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(3, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(4, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(5, QHeaderView.ResizeToContents)
-        hdr.setSectionResizeMode(6, QHeaderView.Stretch)
+        hdr.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        hdr.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        hdr.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        hdr.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        hdr.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
+        hdr.setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)
 
         layout.addWidget(self.table)
 

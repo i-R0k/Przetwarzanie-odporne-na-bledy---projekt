@@ -3,7 +3,7 @@ import hashlib
 import json
 from datetime import datetime
 
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QApplication,
     QCalendarWidget,
     QComboBox,
@@ -20,9 +20,11 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QHeaderView,
+    QAbstractItemView,
 )
-from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QBrush, QColor, QCursor, QFont, QTextCharFormat
+from vetclinic_gui.qt_compat import Qt
+from PyQt6.QtCore import QDate
+from PyQt6.QtGui import QBrush, QColor, QCursor, QFont, QTextCharFormat
 
 from vetclinic_gui.services.animals_service import AnimalService
 from vetclinic_gui.services.appointments_service import AppointmentService
@@ -120,7 +122,7 @@ class DashboardWindow(QMainWindow):
 
         header = QHBoxLayout()
         lbl = QLabel("Karta medyczna")
-        lbl.setFont(QFont("Arial", 12, QFont.Bold))
+        lbl.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         header.addWidget(lbl)
         header.addStretch()
         btn = QToolButton()
@@ -132,23 +134,27 @@ class DashboardWindow(QMainWindow):
         self.med_table.setHorizontalHeaderLabels(
             ["Opis", "Data wizyty", "Status", "Notatki"]
         )
-        self.med_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.med_table.setSelectionMode(QTableWidget.SingleSelection)
-        self.med_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.med_table.setFrameShape(QFrame.NoFrame)
+        self.med_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.med_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.med_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.med_table.setFrameShape(QFrame.Shape.NoFrame)
         self.med_table.setShowGrid(False)
         self.med_table.verticalHeader().setVisible(False)
-        self.med_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.med_table.horizontalHeader().setSectionResizeMode(
-            1, QHeaderView.ResizeToContents
+            0, QHeaderView.ResizeMode.Stretch
         )
         self.med_table.horizontalHeader().setSectionResizeMode(
-            2, QHeaderView.ResizeToContents
+            1, QHeaderView.ResizeMode.ResizeToContents
         )
-        self.med_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self.med_table.horizontalHeader().setSectionResizeMode(
+            2, QHeaderView.ResizeMode.ResizeToContents
+        )
+        self.med_table.horizontalHeader().setSectionResizeMode(
+            3, QHeaderView.ResizeMode.Stretch
+        )
         self.med_table.setColumnWidth(3, 20)
         self.med_table.verticalHeader().setSectionResizeMode(
-            QHeaderView.ResizeToContents
+            QHeaderView.ResizeMode.ResizeToContents
         )
         self.med_table.setStyleSheet(
             """
@@ -372,4 +378,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = DashboardWindow(client_id=1)
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

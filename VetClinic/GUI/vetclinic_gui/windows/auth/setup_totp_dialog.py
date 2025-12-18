@@ -1,22 +1,38 @@
 import io, qrcode, requests
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QMessageBox
+from vetclinic_gui.qt_compat import Qt  # ensure legacy Qt enums are available
 
 API_CONFIRM_TOTP_URL = "http://127.0.0.1:8000/users/confirm-totp"
 
 def round_pixmap(pixmap, radius):
     if pixmap.isNull():
         return pixmap
+
+    # Offscreen/minimal backends na Windows lubią się wykrzaczyć na QPainter;
+    # w takim trybie odpuszczamy zaokrąglanie.
+    platform = QtGui.QGuiApplication.platformName()
+    if platform in ("offscreen", "minimal"):
+        return pixmap
+
     rounded = QtGui.QPixmap(pixmap.size())
-    rounded.fill(QtCore.Qt.transparent)
+    rounded.fill(QtCore.Qt.GlobalColor.transparent)
     painter = QtGui.QPainter(rounded)
-    painter.setRenderHint(QtGui.QPainter.Antialiasing)
-    path = QtGui.QPainterPath()
-    rect = QtCore.QRectF(pixmap.rect())
-    path.addRoundedRect(rect, radius, radius)
-    painter.setClipPath(path)
-    painter.drawPixmap(0, 0, pixmap)
-    painter.end()
+    try:
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
+        painter.setRenderHint(
+            QtGui.QPainter.RenderHint.SmoothPixmapTransform, True
+        )
+
+        path = QtGui.QPainterPath()
+        rect = QtCore.QRectF(0, 0, pixmap.width(), pixmap.height())
+        path.addRoundedRect(rect, radius, radius)
+
+        painter.setClipPath(path)
+        painter.drawPixmap(0, 0, pixmap)
+    finally:
+        painter.end()
+
     return rounded
 
 class ProportionalImageLabel(QtWidgets.QLabel):
@@ -25,8 +41,11 @@ class ProportionalImageLabel(QtWidgets.QLabel):
         super().__init__(parent)
         self._pixmap = None
         self._aspect_ratio = None  
-        self.setAlignment(QtCore.Qt.AlignCenter)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
 
     def setPixmap(self, pixmap):
 
@@ -40,18 +59,23 @@ class ProportionalImageLabel(QtWidgets.QLabel):
         self.updateGeometry()
 
     def updateScaledPixmap(self):
-        if self._pixmap and not self._pixmap.isNull():
-            # Używamy aktualnego rozmiaru widgetu, ale musimy go zabezpieczyć przed zerową szerokością lub wysokością
-            current_size = self.size()
-            if current_size.width() > 0 and current_size.height() > 0:
-                scaled = self._pixmap.scaled(current_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-                super().setPixmap(scaled)
-        else:
-            super().setPixmap(self._pixmap)
+        if not self._pixmap or self._pixmap.isNull():
+            return
+
+        # Używamy aktualnego rozmiaru widgetu, ale musimy go zabezpieczyć przed zerową szerokością lub wysokością
+        current_size = self.size()
+        if current_size.width() > 0 and current_size.height() > 0:
+            scaled = self._pixmap.scaled(
+                current_size,
+                QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                QtCore.Qt.TransformationMode.SmoothTransformation,
+            )
+            super().setPixmap(scaled)
 
     def resizeEvent(self, event):
-        self.updateScaledPixmap()
         super().resizeEvent(event)
+        if self._pixmap and not self._pixmap.isNull():
+            self.updateScaledPixmap()
 
     def sizeHint(self):
         if self._aspect_ratio is not None:

@@ -1,13 +1,30 @@
-from PyQt5.QtCore import QDateTime, pyqtSignal, Qt, QStringListModel
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
-    QGroupBox, QDateTimeEdit, QComboBox, QTextEdit,
-    QPushButton, QTableWidget, QTableWidgetItem,
-    QMessageBox, QApplication, QDoubleSpinBox,
-    QSplitter, QSizePolicy, QHeaderView,
-    QLabel, QGridLayout, QCompleter
+from vetclinic_gui.qt_compat import Qt
+from PyQt6.QtCore import QDateTime, pyqtSignal, QStringListModel
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QFormLayout,
+    QLineEdit,
+    QGroupBox,
+    QDateTimeEdit,
+    QComboBox,
+    QTextEdit,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QMessageBox,
+    QApplication,
+    QDoubleSpinBox,
+    QSplitter,
+    QSizePolicy,
+    QHeaderView,
+    QLabel,
+    QGridLayout,
+    QCompleter,
+    QAbstractItemView,
 )
-from PyQt5.QtGui import QFont
+from PyQt6.QtGui import QFont
 import sys
 
 from vetclinic_gui.services.animals_service       import AnimalService
@@ -188,7 +205,7 @@ class VisitsWindow(QWidget):
 
         hdr_form = QHBoxLayout()
         lbl_form = QLabel("Nowa wizyta")
-        lbl_form.setFont(QFont('Arial', 12, QFont.Bold))
+        lbl_form.setFont(QFont('Arial', 12, QFont.Weight.Bold))
         hdr_form.addWidget(lbl_form)
         hdr_form.addStretch()
         form_vbox.addLayout(hdr_form)
@@ -235,7 +252,7 @@ class VisitsWindow(QWidget):
 
         hdr_info = QHBoxLayout()
         lbl_info = QLabel("Dane zwierzęcia")
-        lbl_info.setFont(QFont('Arial', 12, QFont.Bold))
+        lbl_info.setFont(QFont('Arial', 12, QFont.Weight.Bold))
         hdr_info.addWidget(lbl_info)
         hdr_info.addStretch()
         info_vbox.addLayout(hdr_info)
@@ -260,7 +277,9 @@ class VisitsWindow(QWidget):
             lbl = QLabel(text)
             lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
             info_grid.addWidget(lbl, row, 0)
-            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            widget.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+            )
             info_grid.addWidget(widget, row, 1)
             info_grid.setRowStretch(row, 1)
 
@@ -282,7 +301,7 @@ class VisitsWindow(QWidget):
 
         hdr_prev = QHBoxLayout()
         lbl_prev = QLabel("Poprzednie wizyty")
-        lbl_prev.setFont(QFont('Arial', 12, QFont.Bold))
+        lbl_prev.setFont(QFont('Arial', 12, QFont.Weight.Bold))
         hdr_prev.addWidget(lbl_prev)
         hdr_prev.addStretch()
         prev_vbox.addLayout(hdr_prev)
@@ -291,9 +310,9 @@ class VisitsWindow(QWidget):
         self.prev_table.setHorizontalHeaderLabels(
             ["ID", "Data i czas", "Zwierzę", "Właściciel", "Waga (kg)", "Powód", "Leczenie"]
         )
-        self.prev_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.prev_table.setSelectionMode(QTableWidget.NoSelection)
-        self.prev_table.setFocusPolicy(Qt.NoFocus)
+        self.prev_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.prev_table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.prev_table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.prev_table.verticalHeader().setVisible(False)
         self.prev_table.setAlternatingRowColors(True)
 
@@ -316,14 +335,16 @@ class VisitsWindow(QWidget):
         """)
         hdr = self.prev_table.horizontalHeader()
         for col in range(5):
-            hdr.setSectionResizeMode(col, QHeaderView.ResizeToContents)
-        hdr.setSectionResizeMode(5, QHeaderView.Stretch)
-        hdr.setSectionResizeMode(6, QHeaderView.Stretch)
+            hdr.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+        hdr.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        hdr.setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)
 
         self.prev_table.cellDoubleClicked.connect(self._on_edit_visit)
         prev_vbox.addWidget(self.prev_table)
 
-        prev_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        prev_box.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         main_layout.addWidget(prev_box)
 
     def _load_data(self):
@@ -549,4 +570,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = VisitsWindow(doctor_id=1)
     w.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

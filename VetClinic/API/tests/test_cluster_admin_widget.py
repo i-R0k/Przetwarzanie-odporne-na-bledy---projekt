@@ -4,7 +4,7 @@ import json
 from typing import Any, Dict
 
 import pytest
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from VetClinic.GUI.vetclinic_gui.windows.Admin import cluster_admin_widget as widget_module
 

@@ -1,22 +1,49 @@
 import sys
 
-from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout, 
-    QGroupBox, QLabel, QPushButton, QLineEdit, 
-    QFrame, QTableWidget, QTableWidgetItem,
-    QToolButton, QHeaderView, QSizePolicy, 
-    QToolTip
+from vetclinic_gui.qt_compat import Qt
+from PyQt6.QtWidgets import (
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QGroupBox,
+    QLabel,
+    QPushButton,
+    QLineEdit,
+    QFrame,
+    QTableWidget,
+    QTableWidgetItem,
+    QToolButton,
+    QHeaderView,
+    QSizePolicy,
+    QToolTip,
+    QAbstractItemView,
 )
-from PyQt5.QtCore import Qt, QDate, QDateTime
-from PyQt5.QtGui import (
-    QFont, QBrush, QColor, QCursor, 
-    QPainter, QPen, QGradient, QLinearGradient
+from PyQt6.QtCore import QDate, QDateTime, QTime
+from PyQt6.QtGui import (
+    QFont,
+    QBrush,
+    QColor,
+    QCursor,
+    QPainter,
+    QPen,
+    QGradient,
+    QLinearGradient,
 )
-from PyQt5.QtChart import (
-    QChart, QChartView, QLineSeries,
-    QScatterSeries, QAreaSeries,
-    QDateTimeAxis, QValueAxis
-)
+try:
+    from PyQt6.QtCharts import (
+        QChart,
+        QChartView,
+        QLineSeries,
+        QScatterSeries,
+        QAreaSeries,
+        QDateTimeAxis,
+        QValueAxis,
+    )
+    _CHARTS_AVAILABLE = True
+except Exception:
+    QChart = QChartView = QLineSeries = QScatterSeries = QAreaSeries = None  # type: ignore
+    QDateTimeAxis = QValueAxis = None  # type: ignore
+    _CHARTS_AVAILABLE = False
 
 from vetclinic_gui.services.animals_service      import AnimalService
 from vetclinic_gui.services.clients_service      import ClientService
@@ -44,7 +71,9 @@ class DashboardPage(QWidget):
         upcoming = self._create_upcoming_visits()
         previous = self._create_previous_visits()
         for w in (upcoming, previous):
-            w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            w.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            )
             w.setMinimumWidth(0)
         row1.addWidget(upcoming, 1)
         row1.addWidget(previous, 1)
@@ -53,7 +82,7 @@ class DashboardPage(QWidget):
         # --- wiersz 2: statystyki wizyt ---
         row2 = QHBoxLayout()
         stats = self._create_appointments_stats()
-        stats.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        stats.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         row2.addWidget(stats)
         layout.addLayout(row2, 2)
 
@@ -90,7 +119,7 @@ class DashboardPage(QWidget):
         # Nagłówek sekcji
         header = QHBoxLayout()
         title = QLabel("Nadchodzące wizyty")
-        title.setFont(QFont('Arial', 12, QFont.Bold))
+        title.setFont(QFont('Arial', 12, QFont.Weight.Bold))
         header.addWidget(title)
         header.addStretch()
         menu_btn = QToolButton()
@@ -105,18 +134,18 @@ class DashboardPage(QWidget):
         # Tabela z 4 kolumnami (ostatnia to „Powód i uwagi”)
         table = QTableWidget(0, 4)
         table.setHorizontalHeaderLabels(["Data", "Pacjent", "Godzina", "Powód i uwagi"])
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
-        table.setSelectionMode(QTableWidget.NoSelection)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         table.setFocusPolicy(Qt.NoFocus)
         table.setShowGrid(False)
         table.verticalHeader().setVisible(False)
 
         # Ustawienia rozmiarów kolumn
-        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Data
-        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Pacjent
-        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Godzina
-        table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)           # Powód i uwagi
-        table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Data
+        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Pacjent
+        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # Godzina
+        table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)           # Powód i uwagi
+        table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         table.setWordWrap(True)
 
         # Stylizacja nagłówków i wierszy
@@ -206,7 +235,7 @@ class DashboardPage(QWidget):
         # Nagłówek sekcji
         header = QHBoxLayout()
         title = QLabel("Poprzednie wizyty")
-        title.setFont(QFont('Arial', 12, QFont.Bold))
+        title.setFont(QFont('Arial', 12, QFont.Weight.Bold))
         header.addWidget(title)
         header.addStretch()
         menu_btn = QToolButton()
@@ -221,18 +250,18 @@ class DashboardPage(QWidget):
         # Tabela z 4 kolumnami: Data, Pacjent, Priorytet, Powód i uwagi
         table = QTableWidget(0, 4)
         table.setHorizontalHeaderLabels(["Data", "Pacjent", "Priorytet", "Powód i uwagi"])
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
-        table.setSelectionMode(QTableWidget.NoSelection)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         table.setFocusPolicy(Qt.NoFocus)
         table.setShowGrid(False)
         table.verticalHeader().setVisible(False)
 
         # Ustawienia rozmiarów kolumn
-        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Data
-        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Pacjent
-        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Priorytet
-        table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)           # Powód i uwagi
-        table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Data
+        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Pacjent
+        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # Priorytet
+        table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)           # Powód i uwagi
+        table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         table.setWordWrap(True)
 
         # Stylizacja nagłówków i wierszy
@@ -340,11 +369,11 @@ class DashboardPage(QWidget):
 
         header = QHBoxLayout()
         title = QLabel("Statystyki wizyt")
-        title.setFont(QFont('Arial', 12, QFont.Bold))
+        title.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         header.addWidget(title)
         header.addStretch()
         menu_btn = QToolButton()
-        menu_btn.setText("\u22EE")
+        menu_btn.setText("⋮")
         menu_btn.setStyleSheet(
             "QToolButton { border:none; font-size:16px; color:#6b7280; }"
             "QToolButton:hover { color:#111827; }"
@@ -352,42 +381,36 @@ class DashboardPage(QWidget):
         header.addWidget(menu_btn)
         layout.addLayout(header)
 
-        # 1) Pobierz wszystkie wizyty z API
-        try:
-            all_visits = AppointmentService.list()
-        except Exception as e:
-            QToolTip.showText(QCursor.pos(), f"Błąd pobierania wizyt: {e}")
+        if not _CHARTS_AVAILABLE:
+            fallback = QLabel("Charts unavailable")
+            fallback.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(fallback)
             return group
 
-        # 2) Przygotuj zakres ostatnich 10 dni (jako QDate)
+        try:
+            all_visits = AppointmentService.list()
+        except Exception as exc:
+            QToolTip.showText(QCursor.pos(), f"Blad pobierania wizyt: {exc}")
+            return group
+
         today_qdate = QDate.currentDate()
         date_qdates = [today_qdate.addDays(-i) for i in range(9, -1, -1)]
-        # Teraz date_qdates to lista 10 obiektów QDate:
-        # [dzisiaj-9, dzisiaj-8, …, dzisiaj]
 
-        # 3) Zlicz liczbę wizyt w poszczególnych dniach
         counts_by_date = {qd.toPyDate(): 0 for qd in date_qdates}
-        for v in all_visits:
-            if not hasattr(v, "visit_datetime"):
+        for visit in all_visits:
+            if not hasattr(visit, "visit_datetime"):
                 continue
-            visit_date = v.visit_datetime.date()
+            visit_date = visit.visit_datetime.date()
             if visit_date in counts_by_date:
                 counts_by_date[visit_date] += 1
 
-        # 4) Przygotuj (QDate, int) w porządku rosnącym
-        date_values = [
-            (qd, counts_by_date[qd.toPyDate()])
-            for qd in date_qdates
-        ]
-
-        # 5) Zamień na punkty milisekundowe
+        date_values = [(qd, counts_by_date[qd.toPyDate()]) for qd in date_qdates]
         raw_pts = [
-            (QDateTime(qd).toMSecsSinceEpoch(), cnt)
-            for qd, cnt in date_values
+            (QDateTime(qd, QTime(0, 0)).toMSecsSinceEpoch(), count)
+            for qd, count in date_values
         ]
 
-        # 6) Funkcja Catmull–Rom do wygładzenia wykresu
-        def catmull_rom(pts, samples=20):
+        def catmull_rom(points, samples=20):
             def CR(p0, p1, p2, p3, t):
                 a = 2 * p1[1]
                 b = -p0[1] + p2[1]
@@ -404,21 +427,20 @@ class DashboardPage(QWidget):
                 return x, y
 
             dense = []
-            n = len(pts)
+            n = len(points)
             for i in range(n - 1):
-                p0 = pts[i - 1] if i - 1 >= 0 else pts[i]
-                p1 = pts[i]
-                p2 = pts[i + 1]
-                p3 = pts[i + 2] if i + 2 < n else pts[i + 1]
+                p0 = points[i - 1] if i - 1 >= 0 else points[i]
+                p1 = points[i]
+                p2 = points[i + 1]
+                p3 = points[i + 2] if i + 2 < n else points[i + 1]
                 for s in range(samples):
                     t = s / samples
                     dense.append(CR(p0, p1, p2, p3, t))
-            dense.append(pts[-1])
+            dense.append(points[-1])
             return dense
 
         dense_pts = catmull_rom(raw_pts, samples=20)
 
-        # 7) Utwórz serie dla wykresu
         top = QLineSeries()
         for x, y in dense_pts:
             top.append(x, y)
@@ -445,17 +467,16 @@ class DashboardPage(QWidget):
         scatter.setColor(QColor("#38A2DB"))
         scatter.setBorderColor(QColor("#ffffff"))
         for qd, cnt in date_values:
-            ms = QDateTime(qd).toMSecsSinceEpoch()
+            ms = QDateTime(qd, QTime(0, 0)).toMSecsSinceEpoch()
             scatter.append(ms, cnt)
 
-        def show_tt(pt, state):
+        def show_tt(point, state):
             if state:
-                dt_str = QDateTime.fromMSecsSinceEpoch(int(pt.x())).date().toString("dd.MM.yyyy")
-                QToolTip.showText(QCursor.pos(), f"{dt_str}: {int(pt.y())} wizyt")
+                dt_str = QDateTime.fromMSecsSinceEpoch(int(point.x())).date().toString("dd.MM.yyyy")
+                QToolTip.showText(QCursor.pos(), f"{dt_str}: {int(point.y())} wizyt")
 
         scatter.hovered.connect(show_tt)
 
-        # 8) Konfiguracja QChart
         chart = QChart()
         chart.addSeries(area)
         chart.addSeries(top)
@@ -467,14 +488,14 @@ class DashboardPage(QWidget):
         axisX.setFormat("dd.MM.yyyy")
         axisX.setTickCount(len(date_values))
         axisX.setRange(
-            QDateTime(date_values[0][0]),
-            QDateTime(date_values[-1][0])
+            QDateTime(date_values[0][0], QTime(0, 0)),
+            QDateTime(date_values[-1][0], QTime(0, 0)),
         )
         chart.addAxis(axisX, Qt.AlignBottom)
         for series in (area, top, scatter):
             series.attachAxis(axisX)
 
-        ymax = max(cnt for _, cnt in date_values) * 1.1
+        ymax = max(cnt for _, cnt in date_values) * 1.1 if date_values else 1
         axisY = QValueAxis()
         axisY.setRange(0, ymax)
         axisY.setLabelFormat("%d")
@@ -482,10 +503,9 @@ class DashboardPage(QWidget):
         for series in (area, top, scatter):
             series.attachAxis(axisY)
 
-        # 9) Wyświetl wykres
         view = QChartView(chart)
-        view.setRenderHint(QPainter.Antialiasing)
-        view.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         view.setStyleSheet("border:none; background-color:transparent;")
         layout.addWidget(view)
 

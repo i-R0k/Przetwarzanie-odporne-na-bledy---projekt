@@ -1,13 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from PyQt5.QtWidgets import QApplication
 
 pytestmark = pytest.mark.gui
-
-
-@pytest.fixture(scope="session")
-def app():
-    return QApplication([])
 
 
 @patch("vetclinic_gui.windows.Client.dashboard.AnimalService")

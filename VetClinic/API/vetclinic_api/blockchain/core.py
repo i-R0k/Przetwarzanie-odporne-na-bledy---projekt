@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
-from vetclinic_api.core.database import SessionLocal
+from vetclinic_api.core.database import SessionLocal, Base
 from vetclinic_api.models_blockchain import BlockDB, TransactionDB
 from vetclinic_api.crypto.ed25519 import (
     load_leader_keys_from_env,
@@ -21,6 +21,23 @@ from vetclinic_api.crypto.ed25519 import (
 DIFFICULTY_PREFIX = "0000"
 GENESIS_TIMESTAMP = datetime(2025, 1, 1, 0, 0, 0)
 
+
+def _stable_json(obj: Any) -> bytes:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def block_header_dict(block: "Block") -> dict:
+    return {
+        "index": block.index,
+        "previous_hash": block.previous_hash,
+        "timestamp": block.timestamp.isoformat(),
+        "merkle_root": block.merkle_root,
+        "nonce": block.nonce,
+    }
+
+
+def compute_block_hash_from_header(header: dict) -> str:
+    return hashlib.sha256(_stable_json(header)).hexdigest()
 
 class TxPayload(BaseModel):
     sender: Optional[str] = None
@@ -55,6 +72,7 @@ class Block(BaseModel):
     nonce: int = 0
     merkle_root: str = ""
     leader_sig: str = ""
+    hash: str = ""
 
 
 class BlockchainState(BaseModel):
@@ -71,7 +89,7 @@ def build_genesis_block() -> Block:
     """
     Build deterministic genesis block so every node shares identical hash.
     """
-    return Block(
+    block = Block(
         index=0,
         previous_hash="0" * 64,
         timestamp=GENESIS_TIMESTAMP,
@@ -80,6 +98,8 @@ def build_genesis_block() -> Block:
         merkle_root=compute_merkle_root([]),
         leader_sig="",
     )
+    block.hash = compute_block_hash(block)
+    return block
 
 
 def compute_merkle_root(txs: List[Transaction]) -> str:
@@ -93,35 +113,26 @@ def compute_merkle_root(txs: List[Transaction]) -> str:
 
 
 def block_header_bytes(block: Block) -> bytes:
-    header = {
-        "index": block.index,
-        "previous_hash": block.previous_hash,
-        "timestamp": block.timestamp.isoformat(),
-        "merkle_root": block.merkle_root,
-        "nonce": block.nonce,
-    }
-    return json.dumps(header, sort_keys=True).encode("utf-8")
+    return _stable_json(block_header_dict(block))
 
 
 def compute_block_hash(block: Block) -> str:
-    data = (
-        str(block.index)
-        + block.previous_hash
-        + block.timestamp.isoformat()
-        + block.merkle_root
-        + str(block.nonce)
-    ).encode("utf-8")
-    return hashlib.sha256(data).hexdigest()
+    return compute_block_hash_from_header(block_header_dict(block))
 
 
 def is_valid_new_block(previous: Block, new: Block) -> bool:
     if new.index != previous.index + 1:
         return False
-    if new.previous_hash != compute_block_hash(previous):
+    prev_hash = compute_block_hash(previous)
+    if previous.hash and previous.hash != prev_hash:
+        return False
+    if new.previous_hash != prev_hash:
         return False
     if compute_merkle_root(new.transactions) != new.merkle_root:
         return False
     block_hash = compute_block_hash(new)
+    if new.hash and new.hash != block_hash:
+        return False
     return block_hash.startswith(DIFFICULTY_PREFIX)
 
 
@@ -179,6 +190,16 @@ class InMemoryStorage(Storage):
 class SQLAlchemyStorage(Storage):
     def __init__(self, session_factory: type = SessionLocal) -> None:
         self._session_factory = session_factory
+        self._engine = getattr(session_factory, "bind", None)
+        if self._engine is None:
+            try:
+                # Fallback for older SQLAlchemy: session_factory() returns a Session
+                self._engine = session_factory().get_bind()
+            except Exception:
+                self._engine = None
+        if self._engine is not None:
+            # Ensure tables exist even when tests swap storages mid-flight.
+            Base.metadata.create_all(bind=self._engine)
 
     def _session(self) -> Session:
         return self._session_factory()
@@ -207,6 +228,7 @@ class SQLAlchemyStorage(Storage):
                         nonce=b.nonce,
                         merkle_root=b.merkle_root,
                         leader_sig=b.leader_sig,
+                        hash=b.hash,
                     )
                 )
 
@@ -223,6 +245,7 @@ class SQLAlchemyStorage(Storage):
             close = True
         try:
             block_hash = compute_block_hash(block)
+            block.hash = block_hash
             block_db = BlockDB(
                 index=block.index,
                 previous_hash=block.previous_hash,
@@ -332,7 +355,7 @@ def build_block_proposal(storage: Storage) -> BlockProposal:
         raise ValueError("No transactions to mine")
 
     previous = chain[-1]
-    previous_hash = compute_block_hash(previous)
+    previous_hash = previous.hash or compute_block_hash(previous)
     index = previous.index + 1
     nonce = 0
     timestamp = datetime.utcnow()
@@ -350,6 +373,7 @@ def build_block_proposal(storage: Storage) -> BlockProposal:
         )
         block_hash = compute_block_hash(candidate)
         if block_hash.startswith(DIFFICULTY_PREFIX):
+            candidate.hash = block_hash
             break
         nonce += 1
 
@@ -378,7 +402,10 @@ def verify_chain(storage: Storage) -> Dict[str, Any]:
             errors.append({"block": block.index, "reason": "index not consecutive"})
 
         prev_hash = compute_block_hash(prev)
-        if block.previous_hash != prev_hash:
+        if prev.hash and prev.hash != prev_hash:
+            errors.append({"block": prev.index, "reason": "previous block hash mismatch"})
+
+        if block.previous_hash != prev.hash:
             errors.append({"block": block.index, "reason": "previous_hash mismatch"})
 
         merkle = compute_merkle_root(block.transactions)
@@ -388,6 +415,10 @@ def verify_chain(storage: Storage) -> Dict[str, Any]:
         header_bytes = block_header_bytes(block)
         if not verify_signature(keys.pub, header_bytes, block.leader_sig):
             errors.append({"block": block.index, "reason": "invalid leader_sig"})
+
+        computed_hash = compute_block_hash(block)
+        if block.hash and block.hash != computed_hash:
+            errors.append({"block": block.index, "reason": "block hash mismatch"})
 
         for tx in block.transactions:
             if not _verify_transaction(tx, keys=keys):

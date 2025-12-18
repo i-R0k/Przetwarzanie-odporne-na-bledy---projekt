@@ -1,6 +1,6 @@
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 import requests
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 
 API_CHANGE_PWD_URL = "http://127.0.0.1:8000/users/change-password"
 
@@ -13,8 +13,8 @@ class ChangePasswordDialog(QtWidgets.QDialog):
         self.setWindowTitle("Zmiana hasła")
         self.resize(300, 180)
         layout = QtWidgets.QFormLayout(self)
-        self.new_pwd = QtWidgets.QLineEdit(); self.new_pwd.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.confirm = QtWidgets.QLineEdit(); self.confirm.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.new_pwd = QtWidgets.QLineEdit(); self.new_pwd.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.confirm = QtWidgets.QLineEdit(); self.confirm.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         layout.addRow("Nowe hasło:", self.new_pwd)
         layout.addRow("Powtórz hasło:", self.confirm)
         btn = QtWidgets.QPushButton("Zmień hasło")
@@ -47,9 +47,9 @@ class ResetTOTPDialog(QtWidgets.QDialog):
         self.setWindowTitle("Reset TOTP i zmiana hasła")
         self.resize(350, 220)
         layout = QtWidgets.QFormLayout(self)
-        self.old_pwd = QtWidgets.QLineEdit(); self.old_pwd.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.new_pwd = QtWidgets.QLineEdit(); self.new_pwd.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.confirm = QtWidgets.QLineEdit(); self.confirm.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.old_pwd = QtWidgets.QLineEdit(); self.old_pwd.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.new_pwd = QtWidgets.QLineEdit(); self.new_pwd.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.confirm = QtWidgets.QLineEdit(); self.confirm.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         layout.addRow("Obecne hasło:", self.old_pwd)
         layout.addRow("Nowe hasło:", self.new_pwd)
         layout.addRow("Powtórz nowe hasło:", self.confirm)

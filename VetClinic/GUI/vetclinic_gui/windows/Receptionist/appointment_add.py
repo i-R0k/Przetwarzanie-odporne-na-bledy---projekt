@@ -1,10 +1,21 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout, QLineEdit, QLabel,
-    QPushButton, QMessageBox, QFrame, QSizePolicy,
-    QDateEdit, QComboBox, QCompleter, QTextEdit
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QFormLayout,
+    QLineEdit,
+    QLabel,
+    QPushButton,
+    QMessageBox,
+    QFrame,
+    QSizePolicy,
+    QDateEdit,
+    QComboBox,
+    QCompleter,
+    QTextEdit,
 )
-from PyQt5.QtCore import Qt, QDate, QStringListModel
-from PyQt5.QtGui import QColor
+from vetclinic_gui.qt_compat import Qt
+from PyQt6.QtCore import QDate, QStringListModel
+from PyQt6.QtGui import QColor
 
 from vetclinic_gui.services.clients_service   import ClientService
 from vetclinic_gui.services.animals_service   import AnimalService
@@ -49,7 +60,9 @@ class AppointmentBookingPage(QWidget):
         # === karta ===
         card = QFrame()
         card.setMaximumWidth(600)
-        card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        card.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum
+        )
         card.setStyleSheet("""
             QFrame {
                 background-color: #FFFFFF;
@@ -81,7 +94,7 @@ class AppointmentBookingPage(QWidget):
         self._client_completer = QCompleter(self._client_model, self.client_le)
         self._client_completer.setCaseSensitivity(Qt.CaseInsensitive)
         self._client_completer.setFilterMode(Qt.MatchContains)
-        self._client_completer.setCompletionMode(QCompleter.PopupCompletion)
+        self._client_completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self._client_completer.activated[str].connect(self._on_client_chosen)
         self.client_le.setCompleter(self._client_completer)
         self.client_le.textEdited.connect(self._filter_clients)
@@ -119,7 +132,7 @@ class AppointmentBookingPage(QWidget):
         self._doctor_completer = QCompleter(self._doctor_model, self.doctor_le)
         self._doctor_completer.setCaseSensitivity(Qt.CaseInsensitive)
         self._doctor_completer.setFilterMode(Qt.MatchContains)
-        self._doctor_completer.setCompletionMode(QCompleter.PopupCompletion)
+        self._doctor_completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self._doctor_completer.activated[str].connect(self._on_doctor_chosen)
         self.doctor_le.setCompleter(self._doctor_completer)
         self.doctor_le.textEdited.connect(self._filter_doctors)

@@ -1,8 +1,14 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QTabWidget,
-    QTableWidget, QTableWidgetItem, QMessageBox, QHeaderView
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QTabWidget,
+    QTableWidget,
+    QTableWidgetItem,
+    QMessageBox,
+    QHeaderView,
 )
-from PyQt5.QtCore import Qt
+from vetclinic_gui.qt_compat import Qt
 from datetime import date
 
 from vetclinic_gui.services.clients_service    import ClientService
@@ -66,7 +72,7 @@ class ReceptionistDashboardPage(QWidget):
                     border: 1px solid #e0e0e0;
                 }
             """)
-            tbl.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            tbl.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             tbl.verticalHeader().setVisible(False)
 
         self.tabs.addTab(self.past_table, "Przeszłe")

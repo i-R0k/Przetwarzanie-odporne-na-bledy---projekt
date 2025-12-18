@@ -170,16 +170,15 @@ def test_invoice_list_by_client(mock_list_invoices, mock_session):
 
 
 # ---------- medical_records_service.py ----------
-@patch("vetclinic_gui.services.medical_records_service.SessionLocal")
-@patch("vetclinic_gui.services.medical_records_service.list_medical_records")
-def test_medical_records_list(mock_list, mock_session):
-    mock_list.return_value = [{"id": 1}]
-    db = MagicMock()
-    mock_session.return_value = db
+@patch("vetclinic_gui.services.medical_records_service.requests.get")
+def test_medical_records_list(mock_get):
+    mock_get.return_value.json.return_value = [{"id": 1}]
+    mock_get.return_value.raise_for_status.return_value = None
     from vetclinic_gui.services.medical_records_service import MedicalRecordsService
 
     out = MedicalRecordsService.list()
     assert out
+    mock_get.assert_called_once()
 
 
 # ---------- payment_service.py ----------

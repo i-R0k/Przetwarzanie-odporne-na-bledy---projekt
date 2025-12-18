@@ -1,9 +1,18 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout,
-    QTableWidget, QTableWidgetItem, QHeaderView,
-    QPushButton, QMessageBox, QLabel, QLineEdit, QCheckBox
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QPushButton,
+    QMessageBox,
+    QLabel,
+    QLineEdit,
+    QCheckBox,
+    QAbstractItemView,
 )
-from PyQt5.QtCore import Qt
+from vetclinic_gui.qt_compat import Qt
 
 from vetclinic_gui.services.clients_service import ClientService
 
@@ -45,14 +54,14 @@ class ClientsPage(QWidget):
         # Wysokość wiersza
         vh = self.table.verticalHeader()
         vh.setVisible(False)
-        vh.setSectionResizeMode(QHeaderView.Fixed)
+        vh.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         vh.setDefaultSectionSize(48)
 
         # Styl i zachowanie tabeli
         self.table.setAlternatingRowColors(True)
         self.table.setShowGrid(True)
-        self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.setSelectionMode(QTableWidget.MultiSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.table.setStyleSheet("""
             QTableWidget {
                 background-color: #FFFFFF;
@@ -80,14 +89,14 @@ class ClientsPage(QWidget):
 
         # Proporcje kolumn
         hdr = self.table.horizontalHeader()
-        hdr.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # checkbox
-        hdr.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # ID
-        hdr.setSectionResizeMode(2, QHeaderView.Stretch)           # Imię
-        hdr.setSectionResizeMode(3, QHeaderView.Stretch)           # Nazwisko
-        hdr.setSectionResizeMode(4, QHeaderView.Stretch)           # Email
-        hdr.setSectionResizeMode(5, QHeaderView.ResizeToContents)  # Telefon
-        hdr.setSectionResizeMode(6, QHeaderView.Stretch)           # Adres
-        hdr.setSectionResizeMode(7, QHeaderView.ResizeToContents)  # Kod poczt.
+        hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # checkbox
+        hdr.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # ID
+        hdr.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)           # Imię
+        hdr.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)           # Nazwisko
+        hdr.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)           # Email
+        hdr.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)  # Telefon
+        hdr.setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)           # Adres
+        hdr.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)  # Kod poczt.
 
         layout.addWidget(self.table)
 

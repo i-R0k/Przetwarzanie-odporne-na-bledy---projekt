@@ -1,10 +1,11 @@
 import asyncio
 import random
 
+from fastapi import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
-from vetclinic_api.admin.network_state import STATE
+from vetclinic_api.admin.network_state import STATE, get_state
 
 
 class ChaosMiddleware(BaseHTTPMiddleware):
@@ -24,3 +25,25 @@ class ChaosMiddleware(BaseHTTPMiddleware):
                     return JSONResponse({"detail": "simulated_failure"}, status_code=500)
 
         return await call_next(request)
+
+
+async def apply_rpc_faults(endpoint_name: str) -> None:
+    state = get_state()
+
+    if state.offline:
+        raise HTTPException(status_code=503, detail="Node is offline (simulated)")
+
+    if state.flapping and state.flapping_mod > 0:
+        call_index = state.next_call_index(endpoint_name)
+        if call_index % state.flapping_mod == 1:
+            raise HTTPException(
+                status_code=503, detail="RPC flapping (simulated)"
+            )
+
+    if state.slow_ms > 0:
+        await asyncio.sleep(state.slow_ms / 1000.0)
+
+    if state.should_drop():
+        raise HTTPException(
+            status_code=503, detail="Transient RPC drop (simulated)"
+        )

@@ -1,8 +1,15 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout, QLineEdit, QLabel,
-    QPushButton, QMessageBox, QFrame, QSizePolicy
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QFormLayout,
+    QLineEdit,
+    QLabel,
+    QPushButton,
+    QMessageBox,
+    QFrame,
+    QSizePolicy,
 )
-from PyQt5.QtCore import Qt
+from vetclinic_gui.qt_compat import Qt
 from vetclinic_gui.services.clients_service import ClientService
 
 class RegistrationPage(QWidget):
@@ -27,7 +34,9 @@ class RegistrationPage(QWidget):
         # __2__ karta z białym tłem, zaokrąglonymi rogami i lekkim cieniem
         card = QFrame()
         card.setMaximumWidth(600)
-        card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        card.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum
+        )
         card.setStyleSheet("""
             QFrame {
                 background-color: #FFFFFF;
