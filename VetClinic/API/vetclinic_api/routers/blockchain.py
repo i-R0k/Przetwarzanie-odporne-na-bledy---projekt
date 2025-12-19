@@ -149,14 +149,18 @@ def chain_status(
         }
     except Exception as exc:
         # Provide a consistent shape even on errors so tests do not KeyError.
-        return {
-            "height": None,
-            "last_block_hash": None,
-            "mempool_size": 0,
-            "chain": [],
-            "mempool": [],
-            "detail": str(exc),
-        }, 500
+        return JSONResponse(
+            {
+                "height": None,
+                "last_block_hash": None,
+                "mempool_size": 0,
+                "chain": [],
+                "mempool": [],
+                "detail": str(exc),
+                "valid": False,
+            },
+            status_code=500,
+        )
 
 
 @router.post("/tx/receive", status_code=202, include_in_schema=False)
@@ -215,6 +219,12 @@ async def verify_chain_endpoint(
                 "reason": "internal_error",
                 "detail": str(exc),
             },
+            status_code=200,
+        )
+    except Exception as exc:
+        chain_verify_total.labels(NODE_NAME, "error").inc()
+        response = JSONResponse(
+            {"valid": False, "reason": "internal_error", "detail": str(exc)},
             status_code=200,
         )
     finally:

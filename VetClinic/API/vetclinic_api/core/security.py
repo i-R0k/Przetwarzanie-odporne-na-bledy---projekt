@@ -16,6 +16,10 @@ ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(plain_password: str) -> str:
+    pw_bytes = plain_password.encode("utf-8")
+    if len(pw_bytes) > 72:
+        pw_bytes = pw_bytes[:72]
+        plain_password = pw_bytes.decode("utf-8", errors="ignore")
     return pwd_context.hash(plain_password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

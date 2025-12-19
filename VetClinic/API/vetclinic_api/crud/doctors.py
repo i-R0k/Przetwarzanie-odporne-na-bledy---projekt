@@ -9,6 +9,10 @@ from vetclinic_api.services.email_service import EmailService
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
+    pw_bytes = password.encode("utf-8")
+    if len(pw_bytes) > 72:
+        pw_bytes = pw_bytes[:72]
+        password = pw_bytes.decode("utf-8", errors="ignore")
     return pwd_context.hash(password)
 
 def create_doctor(db: Session, doc_in: DoctorCreate) -> tuple[str, Doctor]:
