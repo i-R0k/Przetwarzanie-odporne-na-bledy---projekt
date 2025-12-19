@@ -27,7 +27,7 @@ jobs:
           pip install -r VetClinic/requirements.txt
           pip install -r VetClinic/requirements-dev.txt
           pip install pytest pytest-cov
-          pip install cryptography PyQt6 pytest-qt
+          python -m pip install pytest pytest-cov pytest-qt PyQt6 cryptography prometheus-client
 
 
       - name: Run tests and generate coverage.xml
