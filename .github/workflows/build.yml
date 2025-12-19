@@ -27,6 +27,8 @@ jobs:
           pip install -r VetClinic/requirements.txt
           pip install -r VetClinic/requirements-dev.txt
           pip install pytest pytest-cov
+          pip install cryptography PyQt6 pytest-qt
+
 
       - name: Run tests and generate coverage.xml
         shell: bash
